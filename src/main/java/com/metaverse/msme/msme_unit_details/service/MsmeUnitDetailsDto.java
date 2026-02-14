@@ -1,0 +1,71 @@
+package com.metaverse.msme.msme_unit_details.service;
+import lombok.Data;
+import java.util.List;
+
+@Data
+public class MsmeUnitDetailsRequest {
+
+    private Integer stageNumber;
+
+    private String district;
+    private String unitAddress;
+    private String doorNo;
+    private String street;
+    private String locality;
+    private String mandal;
+    private String village;
+    private String pinCode;
+    private String officeEmail;
+    private String officeContact;
+    private String totalFemaleEmployees;
+    private String totalMaleEmployees;
+
+    private String ltHt;
+    private String serviceNo;
+    private String currentStatus;
+
+    private String unitHolderOrOwnerName;
+    private String caste;
+    private String specialCategory;
+    private String gender;
+    private String dateOfBirth;
+    private String qualification;
+    private String panNo;
+    private String aadharNo;
+    private String mobileNo;
+    private String emailAddress;
+
+    private String communicationDoorNo;
+    private String communicationLocality;
+    private String communicationStreet;
+    private String communicationVillage;
+    private String communicationMandal;
+    private String communicationDistrict;
+    private String communicationPinCode;
+
+    private String unitName;
+    private String enterpriseType;
+    private String msmeSector;
+    private String organizationType;
+    private String productDescription;
+
+    private String udyamRegistrationDate;
+    private String udyamRegistrationNo;
+    private String gstRegNo;
+
+    private String bankName;
+    private String branchAddress;
+    private String ifscCode;
+    private String unitCostOrInvestment;
+    private String netTurnoverRupees;
+
+    private Boolean unitExists;
+    private Boolean unitWorking;
+    private Boolean bankLoanAvailed;
+    private List<String> schemeNames;
+    private String latitude;
+    private String longitude;
+    private Boolean bankLoanRequired;
+    private List<String> interestedSchemes;
+}
+
