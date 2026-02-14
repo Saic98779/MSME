@@ -11,10 +11,10 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface MsmeUnitDetailsRepository extends JpaRepository<MsmeUnitDetails, Integer> {
+public interface MsmeUnitDetailsRepository extends JpaRepository<MsmeUnitDetails, Long> {
     List<MsmeUnitDetails> findByVillageIgnoreCaseAndMandalIgnoreCase(String village, String mandal);
 
-    @Query("SELECT u FROM MsmeUnitDetails u WHERE u.slno > :after ORDER BY u.slno ASC")
+    @Query("SELECT u FROM MsmeUnitDetails u WHERE u.msmeUnitId > :after ORDER BY u.msmeUnitId ASC")
     List<MsmeUnitDetails> findNextChunk(@Param("after") Integer after, Pageable pageable);
 
 }

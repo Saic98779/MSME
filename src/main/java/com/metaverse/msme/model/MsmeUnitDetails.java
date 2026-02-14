@@ -2,8 +2,8 @@ package com.metaverse.msme.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+
+import java.util.List;
 
 @Data
 @Entity
@@ -11,74 +11,177 @@ import lombok.Setter;
 public class MsmeUnitDetails {
 
     @Id
-    @Column(name = "slno")
-    private Integer slno;
+    @Column(name = "msme_unit_id")
+    private Long msmeUnitId;
 
-    @Column(name = "uniqueno")
-    private String uniqueNo;
+    @Column(name = "stage_number")
+    private Integer stageNumber;
 
-    @Column(name = "departmentname")
-    private String departmentName;
-
-    @Column(name = "msmestate")
-    private String msmeState;
-
-    @Column(name = "msmesdist")
-    private String msmeDist;
-
-    @Column(name = "msmessector")
-    private String msmeSector;
-
-    @Column(name = "unitname")
-    private String unitName;
-
-    @Column(name = "category")
-    private String category;
-
-    @Column(name = "unitaddress")
-    private String unitAddress;
-
-    @Column(name = "doorno")
-    private String doorNo;
-
-    @Column(name = "locality")
-    private String locality;
-
-    @Column(name = "street")
-    private String street;
-
-    @Column(name = "villageid")
-    private String villageid;
-
-    @Column(name = "village")
-    private String village;
-
-    @Column(name = "ward")
-    private String ward;
-
-    @Column(name = "mandal")
-    private String mandal;
+    //---------------Unit/MSME----------------- stage1
 
     @Column(name = "district")
     private String district;
 
+    @Column(name = "unit_address")
+    private String unitAddress;
+
+    @Column(name = "door_no")
+    private String doorNo;
+
+    @Column(name = "street")
+    private String street;
+
+    @Column(name = "locality")
+    private String locality;
+
+    @Column(name = "mandal")
+    private String mandal;
+
+    @Column(name = "village")
+    private String village;
+
     @Column(name = "pincode")
     private String pinCode;
 
-    @Column(name = "officeemail")
+    @Column(name = "office_email")
     private String officeEmail;
 
-    @Column(name = "officecontact")
+    @Column(name = "office_contact")
     private String officeContact;
 
-    @Column(name = "principalbusinessplace")
-    private String principalBusinessPlace;
+    @Column(name = "total_female_employees")
+    private String totalFemaleEmployees;
 
-    @Column(name = "femaleempstotal")
-    private String femaleEmpsTotal;
+    @Column(name = "total_male_employees")
+    private String totalMaleEmployees;
 
-    @Column(name = "maleempstotal")
-    private String maleEmpsTotal;
+    //-----------------Electricity-------------------stage4
+
+    @Column(name = "lt_ht")
+    private String ltHt;
+
+    @Column(name = "service_no")
+    private String serviceNo;
+
+    @Column(name = "current_status")
+    private String currentStatus;
+
+    //------------------Enterprenuner--------------stage2
+
+    @Column(name = "unit_holder_or_owner_name")
+    private String unitHolderOrOwnerName;
+
+    @Column(name = "caste")
+    private String caste;
+
+    @Column(name = "special_category")
+    private String specialCategory;
+
+    @Column(name = "gender")
+    private String gender;
+
+    @Column(name = "date_of_birth")
+    private String dateOfBirth;
+
+    @Column(name = "qualification")
+    private String qualification;
+
+    @Column(name = "pan_no")
+    private String panNo;
+
+    @Column(name = "aadhar_no")
+    private String aadharNo;
+
+    @Column(name = "mobile_no")
+    private String mobileNo;
+
+    @Column(name = "emailaddress")
+    private String emailAddress;
+
+    //------Communication  / Enterprenuer address--------------- stage3
+
+
+    @Column(name = "communication_Doorno")
+    private String communicationDoorNo;
+
+    @Column(name = "communication_locality")
+    private String communicationLocality;
+
+    @Column(name = "communication_street")
+    private String communicationStreet;
+
+    @Column(name = "communication_village")
+    private String communicationVillage;
+
+    @Column(name = "communication_mandal")
+    private String communicationMandal;
+
+    @Column(name = "communication_district")
+    private String communicationDistrict;
+
+    @Column(name = "communication_pincode")
+    private String communicationPinCode;
+
+    //--------------------Activity---------------------stage5
+
+    @Column(name = "unit_name")
+    private String unitName;
+
+    @Column(name = "enterprise_type")
+    private String enterpriseType;
+
+    @Column(name = "msmes_sector")
+    private String msmeSector;
+
+    @Column(name = "organization_type")
+    private String organizationType;
+
+    @Column(name = "product_description")
+    private String productDescription;
+
+    //-----------------Registration-----------------stage6
+
+    @Column(name = "udyam_registration_date")
+    private String udyamRegistrationDate;//dateOfRegistration
+
+    @Column(name = "udyam_registration_no")
+    private String udyamRegistrationNo;
+
+    @Column(name = "gstregno")
+    private String gstRegNo;
+
+    //-------------Financial--------------------------stage7
+    @Column(name = "bank_name")
+    private String bankName;
+
+    @Column(name = "branch_address")
+    private String branchAddress;
+
+    @Column(name = "ifsccode")
+    private String ifscCode;
+
+    @Column(name = "unit_cost_or_investment")
+    private String unitCostOrInvestment;
+
+    @Column(name = "net_turnover_rupees")
+    private String netTurnoverRupees;
+
+    //----------New fields to be captured----------------stage8
+
+    @Column(name = "unit_exists")
+    private Boolean unitExists;
+
+    @Column(name = "unit_working")
+    private Boolean unitWorking;
+
+    @Column(name = "bank_loan_availed")
+    private Boolean bankLoanAvailed;
+
+    @ElementCollection
+    @CollectionTable(name = "msme_schemes_availed",
+            joinColumns = @JoinColumn(name = "slno"))
+    @Column(name = "scheme_name")
+    private List<String> schemeNames;
 
     @Column(name = "lattitude")
     private String latitude;
@@ -86,50 +189,64 @@ public class MsmeUnitDetails {
     @Column(name = "longitute")
     private String longitude;
 
-    @Column(name = "institutiondetails")
+    @Column(name = "bank_loan_required")
+    private Boolean bankLoanRequired;
+
+    @ElementCollection
+    @CollectionTable(name = "msme_schemes_interested",
+            joinColumns = @JoinColumn(name = "slno"))
+    @Column(name = "scheme_name")
+    private List<String> interestedSchemes;
+
+
+
+
+
+
+    @Column(name = "category")
+    private String category;
+
+    @Column(name = "ward")
+    private String ward;
+
+    @Column(name = "department_name")
+    private String departmentName;
+
+    @Column(name = "msme_state")
+    private String msmeState;
+
+    @Column(name = "msmes_dist")
+    private String msmeDist;
+
+    @Column(name = "principal_business_place")
+    private String principalBusinessPlace;
+
+    @Column(name = "institution_details")
     private String institutionDetails;
 
     @Column(name = "purpose")
     private String purpose;
 
-    @Column(name = "orgntype")
-    private String orgnType;
-
-    @Column(name = "enterprisetype")
-    private String enterpriseType;
-
-    @Column(name = "natureOfbusiness")
+    @Column(name = "nature_of_business")
     private String natureOfBusiness;
 
-    @Column(name = "productdesc")
-    private String productDesc;
-
-    @Column(name = "registrationunder")
+    @Column(name = "registration_under")
     private String registrationUnder;
 
-    @Column(name = "registrationno")
+    @Column(name = "registration_no")
     private String registrationNo;
 
-    @Column(name = "dateOfregistration")
-    private String dateOfRegistration;
-
-    @Column(name = "udyamregistrationno")
-    private String udyamRegistrationNo;
-
-    @Column(name = "niccode")
+    @Column(name = "nic_code")
     private String nicCode;
 
-    @Column(name = "incorporationdate")
+    @Column(name = "incorporation_date")
     private String incorporationDate;
 
-    @Column(name = "commmencedate")
+    @Column(name = "commmence_date")
     private String commenceDate;
 
-    @Column(name = "udyamAadharrgistrationno")
+    @Column(name = "udyam_aadhar_rgistration_no")
     private String udyamAadharRegistrationNo;
-
-    @Column(name = "gstregno")
-    private String gstRegNo;
 
     @Column(name = "din")
     private String din;
@@ -137,136 +254,68 @@ public class MsmeUnitDetails {
     @Column(name = "photograph")
     private String photograph;
 
-    @Column(name = "unitholderorownername")
-    private String unitHolderOrOwnerName;
-
-    @Column(name = "firstmiddlelastName")
+    @Column(name = "first_middle_last_Name")
     private String firstMiddleLastName;
 
     @Column(name = "designation")
     private String designation;
 
-    @Column(name = "caste")
-    private String caste;
-
-    @Column(name = "specialcategory")
-    private String specialCategory;
-
-    @Column(name = "gender")
-    private String gender;
-
-    @Column(name = "dateofbirth")
-    private String dateOfBirth;
-
-    @Column(name = "qualification")
-    private String qualification;
-
     @Column(name = "nationality")
     private String nationality;
 
-    @Column(name = "pan")
-    private String pan;
-
-    @Column(name = "aadharno")
-    private String aadharNo;
-
-    @Column(name = "passportno")
+    @Column(name = "passport_no")
     private String passportNo;
 
-    @Column(name = "communicationaddress")
-    private String communicationAddress;
-
-    @Column(name = "commDoorno")
-    private String commDoorNo;
-
-    @Column(name = "commlocality")
-    private String commLocality;
-
-    @Column(name = "commstreet")
-    private String commStreet;
-
-    @Column(name = "commlandmark")
+    @Column(name = "comm_landmark")
     private String commLandmark;
 
-    @Column(name = "commNameofthebuilding")
+    @Column(name = "comm_name_of_the_building")
     private String commNameOfTheBuilding;
 
-    @Column(name = "floorno")
+    @Column(name = "floor_no")
     private String floorNo;
 
-    @Column(name = "commvillage")
-    private String commVillage;
-
-    @Column(name = "commmandal")
-    private String commMandal;
-
-    @Column(name = "commdistrict")
-    private String commDistrict;
-
-    @Column(name = "commpincode")
-    private String commPinCode;
-
-    @Column(name = "commmobileno")
-    private String commMobileNo;
-
-    @Column(name = "commalternateno")
-    private String commAlternateNo;
-
-    @Column(name = "emailaddress")
-    private String emailAddress;
-
-    @Column(name = "ltht")
-    private String ltHt;
-
-    @Column(name = "loadkva")
-    private String loadKva;
-
-    @Column(name = "serviceno")
-    private String serviceNo;
-
-    @Column(name = "currentstatus")
-    private String currentStatus;
-
-    @Column(name = "unitcostoriinvestment")
-    private String unitCostOrInvestment;
-
-    @Column(name = "netturnoverrupees")
-    private String netTurnoverRupees;
-
-    @Column(name = "typeofloan")
+    @Column(name = "type_of_loan")
     private String typeOfLoan;
 
-    @Column(name = "sourceofloan")
+    @Column(name = "source_of_loan")
     private String sourceOfLoan;
 
-    @Column(name = "loanapplieddate")
+    @Column(name = "loan_applied_date")
     private String loanAppliedDate;
 
-    @Column(name = "loansanctiondate")
+    @Column(name = "loan_sanction_date")
     private String loanSanctionDate;
 
-    @Column(name = "subsidyapplicationdate")
+    @Column(name = "subsidy_application_date")
     private String subsidyApplicationDate;
 
-    @Column(name = "bankname")
-    private String bankName;
-
-    @Column(name = "branchnameaddress")
-    private String branchNameAddress;
-
-    @Column(name = "ifsccode")
-    private String ifscCode;
-
-    @Column(name = "releasedatedoc")
+    @Column(name = "release_date_doc")
     private String releaseDateDoc;
 
-    @Column(name = "workingcapital")
+    @Column(name = "working_capital")
     private String workingCapital;
 
     @Column(name = "remarks")
     private String remarks;
 
-    @Column(name = "firmregyear")
+    @Column(name = "firm_reg_year")
     private String firmRegYear;
+
+    @Column(name = "village_id")
+    private String villageid;
+
+    @Column(name = "comm_alternate_no")
+    private String commAlternateNo;
+
+    @Column(name = "load_kva")
+    private String loadKva;
+
+    @Column(name = "unique_no")
+    private String uniqueNo;
+
+    @Column(name = "communicationaddress")
+    private String communicationAddress;
+
 }
 
