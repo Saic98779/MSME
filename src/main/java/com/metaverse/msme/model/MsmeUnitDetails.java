@@ -22,7 +22,7 @@ public class MsmeUnitDetails {
     @Column(name = "district")
     private String district;
 
-    @Column(name = "unit_address")
+    @Column(name = "unit_address", length = 500)
     private String unitAddress;
 
     @Column(name = "door_no")
@@ -136,7 +136,7 @@ public class MsmeUnitDetails {
     @Column(name = "organization_type")
     private String organizationType;
 
-    @Column(name = "product_description")
+    @Column(name = "product_description", length = 500)
     private String productDescription;
 
     //-----------------Registration-----------------stage6
@@ -154,7 +154,7 @@ public class MsmeUnitDetails {
     @Column(name = "bank_name")
     private String bankName;
 
-    @Column(name = "branch_address")
+    @Column(name = "branch_address", length = 500)
     private String branchAddress;
 
     @Column(name = "ifsccode")
@@ -197,10 +197,6 @@ public class MsmeUnitDetails {
             joinColumns = @JoinColumn(name = "slno"))
     @Column(name = "scheme_name")
     private List<String> interestedSchemes;
-
-
-
-
 
 
     @Column(name = "category")
@@ -266,7 +262,7 @@ public class MsmeUnitDetails {
     @Column(name = "passport_no")
     private String passportNo;
 
-    @Column(name = "comm_landmark")
+    @Column(name = "comm_landmark", length = 500)
     private String commLandmark;
 
     @Column(name = "comm_name_of_the_building")
@@ -296,7 +292,7 @@ public class MsmeUnitDetails {
     @Column(name = "working_capital")
     private String workingCapital;
 
-    @Column(name = "remarks")
+    @Column(name = "remarks", length = 500)
     private String remarks;
 
     @Column(name = "firm_reg_year")
@@ -314,7 +310,7 @@ public class MsmeUnitDetails {
     @Column(name = "unique_no")
     private String uniqueNo;
 
-    @Column(name = "communicationaddress")
+    @Column(name = "communicationaddress", length = 500)
     private String communicationAddress;
 
 }

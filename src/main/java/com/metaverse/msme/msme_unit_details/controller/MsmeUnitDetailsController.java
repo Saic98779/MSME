@@ -1,7 +1,6 @@
 package com.metaverse.msme.msme_unit_details.controller;
 
 import com.metaverse.msme.common.ApplicationAPIResponse;
-import com.metaverse.msme.model.MsmeUnitDetails;
 import com.metaverse.msme.msme_unit_details.service.MsmeUnitDetailsDto;
 import com.metaverse.msme.msme_unit_details.service.MsmeUnitDetailsService;
 import com.metaverse.msme.msme_unit_details.service.MsmeUnitSearchPageResponse;
@@ -19,8 +18,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
-
 @RestController
 @RequestMapping("/api/msme-unit")
 @RequiredArgsConstructor
@@ -35,22 +32,36 @@ public class MsmeUnitDetailsController {
             description = "Update existing MSME unit information by unit ID"
     )
     @SecurityRequirement(name = "Bearer Authentication")
-    public ResponseEntity<ApplicationAPIResponse<MsmeUnitDetailsDto>> updateMsmeUnitDetails(
+    public ResponseEntity<?> updateMsmeUnitDetails(
             @Parameter(description = "MSME Unit ID") @PathVariable Long msmeUnitId,
             @RequestBody MsmeUnitDetailsDto request) {
-        MsmeUnitDetailsDto updated = msmeUnitDetailsService.updateMsmeUnitDetails(msmeUnitId, request);
+        try {
+            MsmeUnitDetailsDto updated = msmeUnitDetailsService.updateMsmeUnitDetails(msmeUnitId, request);
 
-        ApplicationAPIResponse<MsmeUnitDetailsDto> response = ApplicationAPIResponse.<MsmeUnitDetailsDto>builder()
-                .data(updated)
-                .success(true)
-                .message("MSME unit details updated successfully")
-                .code(200)
-                .build();
+            ApplicationAPIResponse<MsmeUnitDetailsDto> response = ApplicationAPIResponse.<MsmeUnitDetailsDto>builder()
+                    .data(updated)
+                    .success(true)
+                    .message("MSME unit details updated successfully")
+                    .code(200)
+                    .build();
 
-        return ResponseEntity.ok(response);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            ApplicationAPIResponse<MsmeUnitDetailsDto> response = ApplicationAPIResponse.<MsmeUnitDetailsDto>builder()
+                    .success(false)
+                    .message(e.getMessage())
+                    .code(404)
+                    .build();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        } catch (Exception e) {
+            ApplicationAPIResponse<MsmeUnitDetailsDto> response = ApplicationAPIResponse.<MsmeUnitDetailsDto>builder()
+                    .success(false)
+                    .message("An error occurred while updating MSME unit details")
+                    .code(500)
+                    .build();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
     }
-
-
 
     @GetMapping("/{id}")
     @Operation(
@@ -58,17 +69,33 @@ public class MsmeUnitDetailsController {
             description = "Retrieve MSME unit details by unit ID"
     )
     @SecurityRequirement(name = "Bearer Authentication")
-    public ResponseEntity<ApplicationAPIResponse<MsmeUnitDetailsDto>> getMsmeUnit(
+    public ResponseEntity<?> getMsmeUnit(
             @Parameter(description = "MSME Unit ID") @PathVariable Long id) {
-        MsmeUnitDetailsDto unitDetails = msmeUnitDetailsService.getMsmeUnitById(id);
+        try {
+            MsmeUnitDetailsDto unitDetails = msmeUnitDetailsService.getMsmeUnitById(id);
 
-        ApplicationAPIResponse<MsmeUnitDetailsDto> response = ApplicationAPIResponse.<MsmeUnitDetailsDto>builder()
-                .data(unitDetails)
-                .success(true)
-                .message("MSME unit details retrieved successfully")
-                .code(200)
-                .build();
-        return ResponseEntity.ok(response);
+            ApplicationAPIResponse<MsmeUnitDetailsDto> response = ApplicationAPIResponse.<MsmeUnitDetailsDto>builder()
+                    .data(unitDetails)
+                    .success(true)
+                    .message("MSME unit details retrieved successfully")
+                    .code(200)
+                    .build();
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            ApplicationAPIResponse<MsmeUnitDetailsDto> response = ApplicationAPIResponse.<MsmeUnitDetailsDto>builder()
+                    .success(false)
+                    .message(e.getMessage())
+                    .code(404)
+                    .build();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        } catch (Exception e) {
+            ApplicationAPIResponse<MsmeUnitDetailsDto> response = ApplicationAPIResponse.<MsmeUnitDetailsDto>builder()
+                    .success(false)
+                    .message("An error occurred while retrieving MSME unit details")
+                    .code(500)
+                    .build();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
     }
 
     @PostMapping("/search")
@@ -77,7 +104,7 @@ public class MsmeUnitDetailsController {
             description = "Search MSME units with flexible criteria: districts, mandals, villages, unit name, or mobile number. " +
                     "Supports multiple combinations and partial matching for text fields."
     )
-    public ResponseEntity<ApplicationAPIResponse<MsmeUnitSearchPageResponse>> searchMsmeUnits(
+    public ResponseEntity<?> searchMsmeUnits(
             @Parameter(description = "Page number (0-based). Overrides body.page if provided.")
             @RequestParam(required = false) Integer page,
             @Parameter(description = "Page size. Overrides body.size if provided.")
@@ -89,36 +116,45 @@ public class MsmeUnitDetailsController {
                     content = @Content(schema = @Schema(implementation = MsmeUnitSearchRequest.class))
             )
             @RequestBody MsmeUnitSearchRequest request) {
+        try {
+            int resolvedPage = page != null ? page : (request.getPage() != null ? request.getPage() : 0);
+            int resolvedSize = size != null ? size : (request.getSize() != null ? request.getSize() : 10);
 
-        int resolvedPage = page != null ? page : (request.getPage() != null ? request.getPage() : 0);
-        int resolvedSize = size != null ? size : (request.getSize() != null ? request.getSize() : 10);
+            if (resolvedPage < 0) {
+                resolvedPage = 0;
+            }
+            if (resolvedSize <= 0) {
+                resolvedSize = 10;
+            }
 
-        if (resolvedPage < 0) {
-            resolvedPage = 0;
+            Page<MsmeUnitSearchResponse> results =
+                    msmeUnitDetailsService.searchMsmeUnits(request, resolvedPage, resolvedSize);
+
+            MsmeUnitSearchPageResponse pageResponse = MsmeUnitSearchPageResponse.builder()
+                    .content(results.getContent())
+                    .pageNumber(results.getNumber())
+                    .pageSize(results.getSize())
+                    .totalElements(results.getTotalElements())
+                    .totalPages(results.getTotalPages())
+                    .build();
+
+            ApplicationAPIResponse<MsmeUnitSearchPageResponse> response =
+                    ApplicationAPIResponse.<MsmeUnitSearchPageResponse>builder()
+                            .data(pageResponse)
+                            .success(true)
+                            .message(results.getTotalElements() + " unit(s) found")
+                            .code(200)
+                            .build();
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            ApplicationAPIResponse<MsmeUnitSearchPageResponse> response =
+                    ApplicationAPIResponse.<MsmeUnitSearchPageResponse>builder()
+                            .success(false)
+                            .message("An error occurred while searching MSME units")
+                            .code(500)
+                            .build();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
-        if (resolvedSize <= 0) {
-            resolvedSize = 10;
-        }
-
-        Page<MsmeUnitSearchResponse> results =
-                msmeUnitDetailsService.searchMsmeUnits(request, resolvedPage, resolvedSize);
-
-        MsmeUnitSearchPageResponse pageResponse = MsmeUnitSearchPageResponse.builder()
-                .content(results.getContent())
-                .pageNumber(results.getNumber())
-                .pageSize(results.getSize())
-                .totalElements(results.getTotalElements())
-                .totalPages(results.getTotalPages())
-                .build();
-
-        ApplicationAPIResponse<MsmeUnitSearchPageResponse> response =
-                ApplicationAPIResponse.<MsmeUnitSearchPageResponse>builder()
-                        .data(pageResponse)
-                        .success(true)
-                        .message(results.getTotalElements() + " unit(s) found")
-                        .code(200)
-                        .build();
-
-        return ResponseEntity.ok(response);
     }
 }
