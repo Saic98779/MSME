@@ -19,14 +19,14 @@ public class MsmeUnitDetailsService {
     private final MsmeUnitDetailsRepository unitDetailsRepository;
 
     @Transactional
-    public MsmeUnitDetails updateMsmeUnitDetails(Long msmeUnitId, MsmeUnitDetailsDto request) {
+    public MsmeUnitDetailsDto updateMsmeUnitDetails(Long msmeUnitId, MsmeUnitDetailsDto request) {
 
         MsmeUnitDetails existing = unitDetailsRepository.findById(msmeUnitId)
                 .orElseThrow(() -> new RuntimeException("MSME Unit Details not found with slno: " + msmeUnitId));
 
         MsmeUnitDetailsMapper.mapUpdateMsmeUnitDetails(request, existing);
 
-        return unitDetailsRepository.save(existing);
+        return MsmeUnitDetailsMapper.toMsmeUnitDetailsDto(unitDetailsRepository.save(existing));
     }
 
     public MsmeUnitDetailsDto getMsmeUnitById(Long msmeUnitId) {

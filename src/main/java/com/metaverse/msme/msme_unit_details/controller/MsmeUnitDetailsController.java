@@ -15,8 +15,11 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/api/msme-unit")
@@ -32,12 +35,12 @@ public class MsmeUnitDetailsController {
             description = "Update existing MSME unit information by unit ID"
     )
     @SecurityRequirement(name = "Bearer Authentication")
-    public ResponseEntity<ApplicationAPIResponse<MsmeUnitDetails>> updateMsmeUnitDetails(
+    public ResponseEntity<ApplicationAPIResponse<MsmeUnitDetailsDto>> updateMsmeUnitDetails(
             @Parameter(description = "MSME Unit ID") @PathVariable Long msmeUnitId,
             @RequestBody MsmeUnitDetailsDto request) {
-        MsmeUnitDetails updated = msmeUnitDetailsService.updateMsmeUnitDetails(msmeUnitId, request);
+        MsmeUnitDetailsDto updated = msmeUnitDetailsService.updateMsmeUnitDetails(msmeUnitId, request);
 
-        ApplicationAPIResponse<MsmeUnitDetails> response = ApplicationAPIResponse.<MsmeUnitDetails>builder()
+        ApplicationAPIResponse<MsmeUnitDetailsDto> response = ApplicationAPIResponse.<MsmeUnitDetailsDto>builder()
                 .data(updated)
                 .success(true)
                 .message("MSME unit details updated successfully")
@@ -46,6 +49,8 @@ public class MsmeUnitDetailsController {
 
         return ResponseEntity.ok(response);
     }
+
+
 
     @GetMapping("/{id}")
     @Operation(
@@ -63,7 +68,6 @@ public class MsmeUnitDetailsController {
                 .message("MSME unit details retrieved successfully")
                 .code(200)
                 .build();
-
         return ResponseEntity.ok(response);
     }
 
@@ -117,6 +121,4 @@ public class MsmeUnitDetailsController {
 
         return ResponseEntity.ok(response);
     }
-
-
 }
