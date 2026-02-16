@@ -28,7 +28,9 @@
 	</scm>
 	<properties>
 		<java.version>17</java.version>
+		<jjwt.version>0.12.3</jjwt.version>
 	</properties>
+	<packaging>war</packaging>
     <dependencies>
 
         <!-- WEB + TOMCAT -->
@@ -88,6 +90,26 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
+
+        <!-- JWT -->
+        <dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-api</artifactId>
+			<version>${jjwt.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-impl</artifactId>
+			<version>${jjwt.version}</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-jackson</artifactId>
+			<version>${jjwt.version}</version>
+			<scope>runtime</scope>
+		</dependency>
+
         <!-- Excel generation -->
         <dependency>
             <groupId>org.apache.poi</groupId>
@@ -95,9 +117,17 @@
             <version>5.2.5</version>
         </dependency>
 
+        <!-- Tomcat provided by external container when deploying WAR -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-tomcat</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
     </dependencies>
 
     <build>
+		<finalName>MSME</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>

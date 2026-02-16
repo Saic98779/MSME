@@ -44,8 +44,8 @@ public class ExcelHelper {
                 user.setOfficeEmail(getString(row, 17));
                 user.setOfficeContact(getString(row, 18));
                 user.setPrincipalBusinessPlace(getString(row, 19));
-                user.setFemaleEmpsTotal(getInteger(row, 20));
-                user.setMaleEmpsTotal(getInteger(row, 21));
+//                user.setFemaleEmpsTotal(row, 20);
+//                user.setMaleEmpsTotal(row, 21);
                 user.setInstitutionDetails(getString(row, 24));
                 user.setPurpose(getString(row, 25));
                 user.setOrgnType(getString(row, 26));

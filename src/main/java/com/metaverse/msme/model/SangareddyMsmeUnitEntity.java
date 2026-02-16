@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.poi.ss.usermodel.Row;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -51,7 +52,8 @@ public class SangareddyMsmeUnitEntity {
     private String locality;
     private String street;
     private String village;
-    private Long villageId;
+    @Column(name = "village_id")
+    private String villageId;
     private String ward;
     private String mandal;
     private String district;
@@ -67,8 +69,8 @@ public class SangareddyMsmeUnitEntity {
 
     // ---------- EMPLOYEES ----------
     @Column(name = "femaleempstotal")
-    private Integer femaleEmpsTotal;
-    private Integer maleEmpsTotal;
+    private String femaleEmpsTotal;
+    private String maleEmpsTotal;
 
 
     // ---------- BUSINESS ----------
@@ -162,7 +164,7 @@ public class SangareddyMsmeUnitEntity {
     @Column(columnDefinition = "TEXT")
     private String remarks;
 
-    private Integer firmRegYear;
+    private String firmRegYear;
 
     // ---------- EXTRACTION ----------
     private String extractedVillage;
@@ -173,6 +175,5 @@ public class SangareddyMsmeUnitEntity {
     // ---------- MUNICIPAL ----------
     private String muncipality;
     private String ulbname;
-
 
 }

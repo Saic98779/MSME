@@ -26,8 +26,8 @@ public class CsvHelper {
         user.setPinCode(get(row, 16));
         user.setOfficeEmail(get(row, 17));
         user.setOfficeContact(get(row, 18));
-        user.setFemaleEmpsTotal(parseInt(row, 20));
-        user.setMaleEmpsTotal(parseInt(row, 21));
+//        user.setFemaleEmpsTotal(parseInt(row, 20));
+//        user.setMaleEmpsTotal(parseInt(row, 21));
        /* user.setFirmRegYear(parseInt(row, 81));
         user.setExtractedVillage(get(row, 82));
         user.setExtractedMandal(get(row, 83));
