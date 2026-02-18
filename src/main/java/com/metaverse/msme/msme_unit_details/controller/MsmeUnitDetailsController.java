@@ -139,7 +139,7 @@ public class MsmeUnitDetailsController {
                     ApplicationAPIResponse.<MsmeUnitSearchPageResponse>builder()
                             .data(pageResponse)
                             .success(true)
-                            .message(results.getTotalElements() + " unit(s) found")
+                            .message(results.getTotalElements() + " units found")
                             .code(200)
                             .build();
 
