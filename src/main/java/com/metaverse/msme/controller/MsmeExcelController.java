@@ -1,12 +1,13 @@
 package com.metaverse.msme.controller;
 
 import com.metaverse.msme.extractor.MsmeExcelService;
-import jakarta.websocket.server.PathParam;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/msme")
@@ -36,22 +37,4 @@ public class MsmeExcelController {
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .body(excel);
     }
-
-    @PostMapping(
-            value = "/import-sangareddy-csv",
-            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
-    )
-    public ResponseEntity<?> importCsv(
-            @RequestPart("file") MultipartFile file) {
-
-        if (file.isEmpty()) {
-            return ResponseEntity.badRequest()
-                    .body("Please upload a CSV file");
-        }
-
-        excelService.importCsv(file);
-        return ResponseEntity.accepted()
-                .body("CSV import started successfully");
-    }
-
 }

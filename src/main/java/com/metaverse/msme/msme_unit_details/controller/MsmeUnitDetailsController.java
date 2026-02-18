@@ -102,8 +102,7 @@ public class MsmeUnitDetailsController {
     @Operation(
             summary = "Search MSME units",
             description = "Search MSME units with flexible criteria: districts, mandals, villages, unit name, or mobile number. " +
-                    "Supports multiple combinations and partial matching for text fields."
-    )
+                    "Supports multiple combinations and partial matching for text fields.")
     public ResponseEntity<?> searchMsmeUnits(
             @Parameter(description = "Page number (0-based). Overrides body.page if provided.")
             @RequestParam(required = false) Integer page,
@@ -113,8 +112,7 @@ public class MsmeUnitDetailsController {
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "Search criteria. All fields are optional. Can combine multiple filters.",
                     required = true,
-                    content = @Content(schema = @Schema(implementation = MsmeUnitSearchRequest.class))
-            )
+                    content = @Content(schema = @Schema(implementation = MsmeUnitSearchRequest.class)))
             @RequestBody MsmeUnitSearchRequest request) {
         try {
             int resolvedPage = page != null ? page : (request.getPage() != null ? request.getPage() : 0);
@@ -127,8 +125,7 @@ public class MsmeUnitDetailsController {
                 resolvedSize = 10;
             }
 
-            Page<MsmeUnitSearchResponse> results =
-                    msmeUnitDetailsService.searchMsmeUnits(request, resolvedPage, resolvedSize);
+            Page<MsmeUnitSearchResponse> results = msmeUnitDetailsService.searchMsmeUnits(request, resolvedPage, resolvedSize);
 
             MsmeUnitSearchPageResponse pageResponse = MsmeUnitSearchPageResponse.builder()
                     .content(results.getContent())

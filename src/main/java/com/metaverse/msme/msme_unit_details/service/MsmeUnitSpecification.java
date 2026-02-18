@@ -59,7 +59,7 @@ public class MsmeUnitSpecification {
             if (request.getMobileNumber() != null && !request.getMobileNumber().trim().isEmpty()) {
                 String mobile = request.getMobileNumber().trim();
                 predicates.add(criteriaBuilder.like(
-                        root.get("officeContact"),
+                        root.get("mobileNo"),
                         "%" + mobile + "%"
                 ));
             }

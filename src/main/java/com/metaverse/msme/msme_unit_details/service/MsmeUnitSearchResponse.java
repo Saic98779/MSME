@@ -14,6 +14,10 @@ public class MsmeUnitSearchResponse {
     @Schema(description = "Name of the MSME unit", example = "Sameer Industries")
     private String unitName;
 
+    @Schema(description = "udyamNumber of the MSME unit", example = "Sameer Industries")
+    private String udyamNumber;
+
+
     @Schema(description = "Name of the unit owner/holder", example = "John Doe")
     private String ownerName;
 

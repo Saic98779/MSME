@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 @Component
 public class AddressNormalizer {
 
-    // ✅ Label / noise words (KEEP THIS SMALL & SAFE)
+    //  Label / noise words (KEEP THIS SMALL & SAFE)
     private static final Set<String> STOP_WORDS = Set.of(
             // generic address labels
             "flat", "floor", "no", "dno", "door", "house",
@@ -44,7 +44,7 @@ public class AddressNormalizer {
     }
 
     /**
-     * ✅ Core method
+     *  Core method
      * Returns ONLY meaningful tokens (no labels)
      *
      * Example:
@@ -61,19 +61,19 @@ public class AddressNormalizer {
         String[] tokens = norm.split(" ");
 
         return Arrays.stream(tokens)
-                .filter(t -> !STOP_WORDS.contains(t)) // ✅ remove labels
+                .filter(t -> !STOP_WORDS.contains(t)) //  remove labels
                 .collect(Collectors.toList());
     }
 
     /**
-     * ✅ Convenience – cleaned meaningful string
+     *  Convenience – cleaned meaningful string
      */
     public String cleanedMeaningfulString(String raw) {
         return String.join(" ", extractMeaningfulTokens(raw));
     }
 
     /**
-     * ✅ NEW (important for next steps)
+     *  NEW (important for next steps)
      * Unique token set for O(1) lookups (mandal/village detection)
      */
     public List<String> meaningfulTokenSet(String raw) {
@@ -91,8 +91,7 @@ public class AddressNormalizer {
                 "village", "town", "city", "district", "dist", "mandal",
                 "block", "street", "st", "rd", "lane", "colony",
                 "house", "flat", "building", "doorno", "plot", "near", "opp",
-                "area", "locality", "0", "-"
-        );
+                "area", "locality", "0", "-");
 
         List<String> out = new ArrayList<>();
 //        out = normalizeAndRemoveRoadNames(out);
@@ -116,24 +115,24 @@ public class AddressNormalizer {
 
         String lower = raw.toLowerCase();
 
-        // ✅ CASE 1: Structured form (Road/Street:- exists)
+        //  CASE 1: Structured form (Road/Street:- exists)
         if (lower.matches(".*road\\s*/\\s*street\\s*:-?.*")) {
             // Remove other labels but KEEP their values
             lower = lower.replaceAll("\\b(flat\\s*no|building|village/town|block|city)\\s*:-?", " ");
 
-            // ✅ NEW: remove ONLY one word before 'road' + 'road' itself
+            //  NEW: remove ONLY one word before 'road' + 'road' itself
             lower = lower.replaceFirst("\\b\\w+\\b\\s+road\\b\\s*", " ");
         }
-        // ✅ CASE 2: Free-text address (no labels)
+        //  CASE 2: Free-text address (no labels)
         else {
-            // ✅ REMOVE ONLY: one word before 'road' + 'road'
+            //  REMOVE ONLY: one word before 'road' + 'road'
             lower = lower.replaceFirst("\\b\\w+\\b\\s+road\\b\\s*", " ");
 
             // Remove (V), (H) etc
             lower = lower.replaceAll("\\([a-z]+\\)", " ");
         }
 
-        // ✅ COMMON CLEANUP
+        //  COMMON CLEANUP
         lower = lower.replaceAll("\\b(h\\.?no|d\\.?no|plot|flat)\\b\\s*[:\\-]?\\s*\\w+", " ");
 
         lower = lower.replaceAll("[^a-z\\s]", " ");
@@ -142,63 +141,4 @@ public class AddressNormalizer {
 
         return lower;
     }
-
-
-/*
-
-    List<String> normalizeAndRemoveRoadNames(List<String> tokens) {
-
-        List<String> result = new ArrayList<>();
-
-        for (int i = 0; i < tokens.size(); i++) {
-
-            String token = tokens.get(i);
-            String norm = phoneticNormalize(token).toLowerCase();
-
-            System.out.println("Token: " + token + " | Normalized: " + norm);
-
-            // If current token is ROAD → skip it
-            if (ROAD_WORDS.contains(norm)) {
-
-                System.out.println("➡ ROAD word detected: " + token);
-
-                // Also remove the PREVIOUS token safely
-                if (!result.isEmpty()) {
-
-                    String prev = phoneticNormalize(result.get(result.size() - 1)).toLowerCase();
-                    String prevRaw = result.get(result.size() - 1);
-
-                    System.out.println("   Checking previous token: " + prevRaw + " | normalized: " + prev);
-
-                    // remove only if it looks like a road name
-                    if (prev.length() >= 4 && !VILLAGE_MARKERS.contains(prev)) {
-
-                        System.out.println("   ❌ Removing previous token (belongs to ROAD): " + prevRaw);
-                        result.remove(result.size() - 1);
-                    } else {
-                        System.out.println("   ✔ Previous token kept (marker or short): " + prevRaw);
-                    }
-                }
-
-                System.out.println("   ❌ Skipping ROAD token: " + token);
-                continue; // skip ROAD itself
-            }
-
-            // Token accepted
-            System.out.println("✔ Keeping token: " + token);
-            result.add(token);
-        }
-
-        System.out.println("Final Tokens After Road Removal: " + result);
-        return result;
-    }
-
-
-    private String phoneticNormalize(String s) {
-        return s
-                .replace("oo", "u")
-                .replace("oor", "ur");
-    }
-
- */
 }

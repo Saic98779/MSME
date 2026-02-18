@@ -4,10 +4,7 @@ import com.metaverse.msme.address.AddressNormalizer;
 import com.metaverse.msme.address.AdminNameParts;
 import com.metaverse.msme.extractor.*;
 import com.metaverse.msme.model.*;
-import com.metaverse.msme.repository.MEMPASangareddyRepo;
 import com.metaverse.msme.repository.MsmeUnitDetailsRepository;
-import com.metaverse.msme.repository.SangareddyMsmeUnitRepo;
-import com.metaverse.msme.repository.TGSPDCLDepartmentUnitDetailsRepo;
 import jakarta.persistence.EntityManager;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -20,18 +17,15 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 @Service
 public class AddressParseService {
 
     private final MandalDetector mandalDetector;
     private final VillageDetector villageDetector;
-    private final AddressNormalizer addressNormalizer; // ✅ MUST EXIST
-//    private final MsmeUnitDetailsRepository repository;
-    private final SangareddyMsmeUnitRepo repository;
-//    private final MEMPASangareddyRepo repository;
-//     private final TGSPDCLDepartmentUnitDetailsRepo repository;
+    private final AddressNormalizer addressNormalizer;
+    private final MsmeUnitDetailsRepository repository;
+
     @Autowired
     private  AddressNormalizer normalizer;
 
@@ -43,7 +37,7 @@ public class AddressParseService {
     public AddressParseService(
             MandalDetector mandalDetector,
             VillageDetector villageDetector,
-            AddressNormalizer addressNormalizer, SangareddyMsmeUnitRepo repository) {
+            AddressNormalizer addressNormalizer, MsmeUnitDetailsRepository repository) {
 
         this.mandalDetector = mandalDetector;
         this.villageDetector = villageDetector;
@@ -209,6 +203,22 @@ public class AddressParseService {
     /* ----------------------------------------------------------
        NORMAL FLOW → Mandal already found
        ---------------------------------------------------------- */
+        if (mandalResult.getStatus() == MandalDetectionStatus.MULTIPLE_MANDALS) {
+
+            Set<String> mandals = mandalResult.getMatchedMandals();
+
+            if (mandals != null && !mandals.isEmpty()) {
+                return resolveMultipleMandalsUsingVillage(
+                        district,
+                        address,
+                        mandals
+                );
+            }
+
+            return AddressParseResult.fromMandalResult(mandalResult);
+        }
+
+
         if (mandalResult.getStatus() != MandalDetectionStatus.SINGLE_MANDAL) {
             return AddressParseResult.fromMandalResult(mandalResult);
         }
@@ -248,11 +258,11 @@ public class AddressParseService {
 
         for (String q : dbParts.getQualifiers()) {
             if (addrWords.contains(q)) {
-                return dbMandalName;       // "Mavala (New)"
+                return dbMandalName;
             }
         }
 
-        return capitalize(dbParts.getBaseName()); // "Mavala"
+        return capitalize(dbParts.getBaseName());
     }
 
     private String capitalize(String s) {
@@ -285,69 +295,6 @@ public class AddressParseService {
         }
         return new AdminNameParts(String.join(" ", baseParts).trim(), qualifiers);
     }
-
-    @Transactional
-    public int updateAllUnitsVillage() {
-
-        int page = 0;
-        int size = 2000;                // BATCH SIZE
-        int totalUpdated = 0;
-
-        Page<SangareddyMsmeUnitEntity> pageResult;
-
-        // Cache to avoid parsing same address again
-        Map<String, AddressParseResult> cache = new ConcurrentHashMap<>();
-
-        do {
-            pageResult = repository.findAll(PageRequest.of(page, size));
-
-            Map<Integer, String> updateMap = new ConcurrentHashMap<>();
-
-            // PARALLEL PROCESSING
-            pageResult.getContent().parallelStream().forEach(unit -> {
-
-                if (unit.getUnitAddress() == null) return;
-
-                // CACHE: Parse once for repeated addresses
-                AddressParseResult result = cache.computeIfAbsent(
-                        unit.getUnitAddress(),
-                        addr -> parse("Sangareddy", addr)
-                );
-
-                if (result != null && result.getVillage() != null) {
-                    updateMap.put(unit.getSlno(), result.getVillage());
-                }
-            });
-
-            // BULK UPDATE
-            if (!updateMap.isEmpty()) {
-                batchUpdateVillage(updateMap);
-                totalUpdated += updateMap.size();
-            }
-
-            System.out.println("Batch " + page + " completed. Updated: " + totalUpdated);
-
-            page++;
-
-        } while (!pageResult.isLast());
-
-        return totalUpdated;
-    }
-
-
-
-    public void batchUpdateVillage(Map<Integer, String> updates) {
-
-        String sql = "UPDATE msme_unit_details SET villageId = ? WHERE slno = ?";
-
-        jdbcTemplate.batchUpdate(sql, updates.entrySet(), 500,
-                (ps, entry) -> {
-                    ps.setString(1, entry.getValue());
-                    ps.setInt(2, entry.getKey());
-                }
-        );
-    }
-
 
     private Optional<String> resolveMandalFromRawAddress(
             String rawAddress,
@@ -398,7 +345,6 @@ public class AddressParseService {
                 .replace("oor", "ur");
     }
 
-
     private double similarity(String s1, String s2) {
         int dist = levenshtein(s1, s2);
         int max = Math.max(s1.length(), s2.length());
@@ -422,36 +368,45 @@ public class AddressParseService {
         return dp[s1.length()][s2.length()];
     }
 
-    private boolean districtPresentInRaw(
-            String rawAddress,
-            String district) {
+    private AddressParseResult resolveMultipleMandalsUsingVillage(
+            String district,
+            String address,
+            Set<String> mandals) {
 
-        if (rawAddress == null || district == null) {
-            return false;
+        // 1️⃣ Detect village across district (NOT mandal-scoped)
+        VillageDetectionResult vResult =
+                villageDetector.detectVillageAcrossDistrict(district, address);
+
+        if (vResult.getStatus() != VillageDetectionStatus.SINGLE_VILLAGE) {
+            return AddressParseResult.fromMandalResult(
+                    MandalDetectionResult.multiple(mandals)
+            );
         }
 
-        List<String> tokens = addressNormalizer.meaningfulTokenSet(rawAddress);
+        String village = vResult.getVillage();
 
-        String districtPh =
-                phoneticNormalize(addressNormalizer.normalize(district));
+        // 2️⃣ Find mandals that actually contain this village
+        Set<String> mandalsByVillage =
+                villageDetector.findMandalsByVillage(district, village);
 
-        for (String t : tokens) {
-            String tPh =
-                    phoneticNormalize(addressNormalizer.normalize(t));
+        // 3️⃣ Intersect with detected mandals
+        mandalsByVillage.retainAll(mandals);
 
-            // exact phonetic match
-            if (tPh.equals(districtPh)) {
-                return true;
-            }
+        // ✅ Exactly ONE mandal owns this village
+        if (mandalsByVillage.size() == 1) {
+            String resolvedMandal = mandalsByVillage.iterator().next();
 
-            // fuzzy safety
-            if (similarity(tPh, districtPh) >= 0.90) {
-                return true;
-            }
+            return AddressParseResult.combineResolved(
+                    MandalDetectionResult.single(resolvedMandal),
+                    resolvedMandal,
+                    VillageDetectionResult.single(village.toLowerCase())
+            );
         }
-        return false;
+
+        // ❌ Village belongs to multiple mandals OR none
+        return AddressParseResult.fromMandalResult(
+                MandalDetectionResult.multiple(mandals)
+        );
     }
-
-
 
 }

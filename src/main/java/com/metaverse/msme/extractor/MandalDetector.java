@@ -17,8 +17,7 @@ public class MandalDetector {
     private final DistrictHierarchyRepository repository;
     private final Map<String, DistrictHierarchyEntity> extractorCache = new HashMap<>();
 
-    public MandalDetector(AddressNormalizer normalizer,
-                          DistrictHierarchyRepository repository) {
+    public MandalDetector(AddressNormalizer normalizer, DistrictHierarchyRepository repository) {
         this.normalizer = normalizer;
         this.repository = repository;
     }
@@ -101,7 +100,7 @@ public class MandalDetector {
     /* ---------------------------------------------------------
        STEP 2 — READ DISTRICT HIERARCHY
        --------------------------------------------------------- */
-        DistrictHierarchyEntity opt = extractorCache.get("Sangareddy");
+        DistrictHierarchyEntity opt = extractorCache.get(district);
 
 
         JSONObject root = new JSONObject(opt.getHierarchyJson());
@@ -129,11 +128,10 @@ public class MandalDetector {
             // ALIAS normalized & phonetic
             String aliasNorm = null;
             if (mandalObj.has("aliasName") && !mandalObj.isNull("aliasName")) {
-                aliasNorm = phoneticNormalize(
-                        normalizer.normalize(mandalObj.getString("aliasName")));
+                aliasNorm = phoneticNormalize(normalizer.normalize(mandalObj.getString("aliasName")));
             }
 
-            // split words like "adilabad rural"
+
             Set<String> mandalWords =
                     new HashSet<>(Arrays.asList(mandalNorm.split("\\s+")));
 
@@ -246,10 +244,7 @@ public class MandalDetector {
     }
 
 
-    private boolean matchesByNameOrAlias(
-            String tokenNorm,
-            String nameNorm,
-            String aliasRaw) {
+    private boolean matchesByNameOrAlias(String tokenNorm, String nameNorm, String aliasRaw) {
 
         // ✅ direct name match
         if (tokenNorm.equals(nameNorm)) {
