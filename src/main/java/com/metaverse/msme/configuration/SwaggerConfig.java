@@ -17,17 +17,17 @@ import java.util.List;
 @Configuration
 public class SwaggerConfig {
 
-    @Value("${server.port:8083}")
-    private String serverPort;
+    @Value("${app.swagger.server-url:}")
+    private String swaggerServerUrl;
 
-    @Value("${server.servlet.context-path:/msme}")
-    private String contextPath;
+    @Value("${app.swagger.server-description:}")
+    private String swaggerServerDescription;
 
     @Bean
     public OpenAPI customOpenAPI() {
         final String securitySchemeName = "Bearer Authentication";
 
-        return new OpenAPI()
+        OpenAPI openAPI = new OpenAPI()
                 .info(new Info()
                         .title("MSME API Documentation")
                         .description("REST API documentation for MSME Management System with JWT Authentication")
@@ -39,13 +39,6 @@ public class SwaggerConfig {
                         .license(new License()
                                 .name("Apache 2.0")
                                 .url("https://www.apache.org/licenses/LICENSE-2.0.html")))
-                .servers(List.of(
-                        new Server()
-                                .url("http://localhost:" + serverPort + contextPath)
-                                .description("Local Development Server"),
-                        new Server()
-                                .url("https://api.msme.com/msme")
-                                .description("Production Server")))
                 .addSecurityItem(new SecurityRequirement().addList(securitySchemeName))
                 .components(new Components()
                         .addSecuritySchemes(securitySchemeName,
@@ -55,6 +48,14 @@ public class SwaggerConfig {
                                         .scheme("bearer")
                                         .bearerFormat("JWT")
                                         .description("Enter JWT Bearer token in the format: Bearer <token>")));
+
+        if (swaggerServerUrl != null && !swaggerServerUrl.isBlank()) {
+            String description = (swaggerServerDescription == null || swaggerServerDescription.isBlank())
+                    ? "Configured Server"
+                    : swaggerServerDescription;
+            openAPI.servers(List.of(new Server().url(swaggerServerUrl).description(description)));
+        }
+
+        return openAPI;
     }
 }
-
