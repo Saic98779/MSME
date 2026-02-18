@@ -17,16 +17,7 @@ public class AddressParseController {
 
     @Operation(summary = "Detect mandal and village from address")
     @GetMapping("/parse")
-    public AddressParseResult parseAddress(
-            @RequestParam String district,
-            @RequestParam String address) {
-
+    public AddressParseResult parseAddress(@RequestParam String district, @RequestParam String address) {
         return service.parse(district, address);
-    }
-
-    @PostMapping("/update-all")
-    public String updateAllUnits() {
-        int updated = service.updateAllUnitsVillage();
-        return "Village update completed. Records updated: " + updated;
     }
 }

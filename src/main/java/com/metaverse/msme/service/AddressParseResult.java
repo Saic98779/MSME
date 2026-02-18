@@ -17,12 +17,6 @@ public class AddressParseResult {
     private final VillageDetectionStatus villageStatus;
     private final String village;
     private final Set<String> multipleVillages;
-/*
-
-    private final DistrictDetectionStatus DistrictStatus;
-    private final String district;
-    private final Set<String> multipleDistricts;
-*/
 
     private AddressParseResult(MandalDetectionStatus mandalStatus, String mandal, Set<String> multipleMandals, VillageDetectionStatus villageStatus, String village, Set<String> multipleVillages) {
         this.mandalStatus = mandalStatus;

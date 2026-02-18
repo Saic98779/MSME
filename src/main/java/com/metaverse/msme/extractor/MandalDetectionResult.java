@@ -53,7 +53,7 @@ public class MandalDetectionResult {
             Set<String> mandals) {
 
         return new MandalDetectionResult(
-                MandalDetectionStatus.MULTIPLE_MANDALS_FROM_VILLAGE,
+                MandalDetectionStatus.MULTIPLE_MANDALS,
                 null,                 // mandal
                 mandals               // multipleMandals
         );
