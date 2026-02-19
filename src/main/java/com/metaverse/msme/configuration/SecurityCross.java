@@ -90,8 +90,9 @@ public class SecurityCross {
 
         config.setAllowedOrigins(List.of(
                 "http://localhost:3000",
-                "http://localhost:4200"
-        ));
+                "http://localhost:4200",
+                "https://api.msme.metaversedu.in"
+                ));
 
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         config.setAllowedHeaders(List.of(
