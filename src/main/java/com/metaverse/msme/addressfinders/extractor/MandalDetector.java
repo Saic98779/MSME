@@ -1,6 +1,6 @@
-package com.metaverse.msme.extractor;
+package com.metaverse.msme.addressfinders.extractor;
 
-import com.metaverse.msme.address.AddressNormalizer;
+import com.metaverse.msme.addressfinders.address.AddressNormalizer;
 import com.metaverse.msme.model.DistrictHierarchyEntity;
 import com.metaverse.msme.repository.DistrictHierarchyRepository;
 import jakarta.annotation.PostConstruct;

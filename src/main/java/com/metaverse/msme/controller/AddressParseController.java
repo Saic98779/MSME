@@ -1,7 +1,7 @@
 package com.metaverse.msme.controller;
 
-import com.metaverse.msme.service.AddressParseResult;
-import com.metaverse.msme.service.AddressParseService;
+import com.metaverse.msme.addressfinders.service.AddressParseResult;
+import com.metaverse.msme.addressfinders.service.AddressParseService;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.web.bind.annotation.*;
 

@@ -1,9 +1,11 @@
-package com.metaverse.msme.service;
+package com.metaverse.msme.addressfinders.service;
 
 
-import com.metaverse.msme.extractor.*;
+import com.metaverse.msme.addressfinders.extractor.MandalDetectionResult;
+import com.metaverse.msme.addressfinders.extractor.MandalDetectionStatus;
+import com.metaverse.msme.addressfinders.extractor.VillageDetectionResult;
+import com.metaverse.msme.addressfinders.extractor.VillageDetectionStatus;
 import lombok.Getter;
-import lombok.ToString;
 
 import java.util.Set;
 

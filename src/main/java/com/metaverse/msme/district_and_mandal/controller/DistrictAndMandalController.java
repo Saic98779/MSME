@@ -7,10 +7,7 @@ import com.metaverse.msme.district_and_mandal.service.VillageResponse;
 import com.metaverse.msme.model.MsmeUnitDetails;
 import jakarta.websocket.server.PathParam;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 import java.util.List;
 
@@ -26,14 +23,14 @@ public class DistrictAndMandalController {
         return districtAndMandalService.getAllDistricts();
     }
 
-    @GetMapping("/mandals/{districtId}")
+    @GetMapping("/mandals/{districtName}")
     public List<MandalResponse> getMandals(@PathVariable String districtId) {
         return districtAndMandalService.getMandalsByDistrictName(districtId);
     }
 
-    @GetMapping("/villages/{mandalId}")
-    public List<VillageResponse> getVillages(@PathVariable String mandalId) {
-        return districtAndMandalService.getVillagesByMandalName(mandalId);
+    @GetMapping("/villages/{districtName}")
+    public List<VillageResponse> getVillages(@PathVariable String districtName, @RequestParam String mandalName) {
+        return districtAndMandalService.getVillagesByMandalName(districtName,mandalName);
     }
 
     @GetMapping("/units")

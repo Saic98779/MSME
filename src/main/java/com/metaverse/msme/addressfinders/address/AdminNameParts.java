@@ -1,4 +1,4 @@
-package com.metaverse.msme.address;
+package com.metaverse.msme.addressfinders.address;
 
 import java.util.Set;
 

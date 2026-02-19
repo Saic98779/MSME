@@ -52,7 +52,7 @@ public class DistrictAndMandalServiceAdapter implements DistrictAndMandalService
             for (JsonNode mandal : mandals) {
                 result.add(new MandalResponse(
                         mandal.path("mandalId").asLong(),
-                        mandal.path("mandalName").asText()
+                        mandal.path("mandalName").asText().toUpperCase()
                 ));
             }
 
@@ -66,9 +66,9 @@ public class DistrictAndMandalServiceAdapter implements DistrictAndMandalService
 
 
     @Override
-    public List<VillageResponse> getVillagesByMandalName(String mandalName) {
+    public List<VillageResponse> getVillagesByMandalName(String districtName ,String mandalName) {
         // Get the district hierarchy (e.g., Adilabad)
-        DistrictHierarchyEntity district = districtHierarchyRepository.findByDistrictName("Adilabad")
+        DistrictHierarchyEntity district = districtHierarchyRepository.findByDistrictName(districtName)
                 .orElseThrow(() -> new RuntimeException("District not found"));
 
         try {
@@ -78,13 +78,13 @@ public class DistrictAndMandalServiceAdapter implements DistrictAndMandalService
             // Find the mandal node
             JsonNode mandals = root.path("mandals");
             for (JsonNode mandal : mandals) {
-                if (mandal.path("mandalId").asText().equalsIgnoreCase(mandalName)) {
+                if (mandal.path("mandalName").asText().equalsIgnoreCase(mandalName)) {
                     JsonNode villages = mandal.path("villages");
                     List<VillageResponse> result = new ArrayList<>();
                     for (JsonNode village : villages) {
                         result.add(new VillageResponse(
                                 village.path("villageId").asInt(),
-                                village.path("villageName").asText()
+                                village.path("villageName").asText().toUpperCase()
                         ));
                     }
                     return result;
