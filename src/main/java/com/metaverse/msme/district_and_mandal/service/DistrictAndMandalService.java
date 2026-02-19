@@ -8,5 +8,5 @@ public interface DistrictAndMandalService {
     List<DistrictResponse> getAllDistricts();
     List<MandalResponse> getMandalsByDistrictName(String districtId);
     List<MsmeUnitDetails> getByVillage(String village, String mandal);
-    List<VillageResponse> getVillagesByMandalName(String mandalName);
+    List<VillageResponse> getVillagesByMandalName(String districtName,String mandalName);
 }

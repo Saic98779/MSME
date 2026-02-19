@@ -1,9 +1,9 @@
-package com.metaverse.msme.extractor;
+package com.metaverse.msme.addressfinders.extractor;
 
 import com.metaverse.msme.model.MsmeUnitDetails;
 import com.metaverse.msme.repository.MsmeUnitDetailsRepository;
-import com.metaverse.msme.service.AddressParseResult;
-import com.metaverse.msme.service.AddressParseService;
+import com.metaverse.msme.addressfinders.service.AddressParseResult;
+import com.metaverse.msme.addressfinders.service.AddressParseService;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.apache.poi.ss.usermodel.Row;

@@ -1,22 +1,17 @@
-package com.metaverse.msme.service;
+package com.metaverse.msme.addressfinders.service;
 
-import com.metaverse.msme.address.AddressNormalizer;
-import com.metaverse.msme.address.AdminNameParts;
-import com.metaverse.msme.extractor.*;
-import com.metaverse.msme.model.*;
+import com.metaverse.msme.addressfinders.address.AddressNormalizer;
+import com.metaverse.msme.addressfinders.address.AdminNameParts;
+import com.metaverse.msme.addressfinders.extractor.*;
 import com.metaverse.msme.repository.MsmeUnitDetailsRepository;
 import jakarta.persistence.EntityManager;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class AddressParseService {

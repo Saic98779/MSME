@@ -1,4 +1,4 @@
-package com.metaverse.msme.extractor;
+package com.metaverse.msme.addressfinders.extractor;
 
 public enum MandalDetectionStatus {
     SINGLE_MANDAL,

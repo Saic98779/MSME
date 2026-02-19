@@ -7,8 +7,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
 
-public interface DistrictHierarchyRepository
-        extends JpaRepository<DistrictHierarchyEntity, Long> {
+public interface DistrictHierarchyRepository extends JpaRepository<DistrictHierarchyEntity, Long> {
 
     Optional<DistrictHierarchyEntity> findByDistrictNameIgnoreCase(String districtName);
 
