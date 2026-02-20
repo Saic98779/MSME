@@ -24,12 +24,12 @@ public class DistrictAndMandalController {
     }
 
     @GetMapping("/mandals/{districtName}")
-    public List<MandalResponse> getMandals(@PathVariable String districtId) {
-        return districtAndMandalService.getMandalsByDistrictName(districtId);
+    public List<MandalResponse> getMandals(@PathVariable String districtName) {
+        return districtAndMandalService.getMandalsByDistrictName(districtName);
     }
 
-    @GetMapping("/villages/{districtName}")
-    public List<VillageResponse> getVillages(@PathVariable String districtName, @RequestParam String mandalName) {
+    @GetMapping("/villages/{districtName}/{mandalName}")
+    public List<VillageResponse> getVillages(@PathVariable String districtName, @PathVariable String mandalName) {
         return districtAndMandalService.getVillagesByMandalName(districtName,mandalName);
     }
 
