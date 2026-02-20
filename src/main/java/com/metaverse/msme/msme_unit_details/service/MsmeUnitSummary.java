@@ -1,6 +1,7 @@
 package com.metaverse.msme.msme_unit_details.service;
 
 public interface MsmeUnitSummary {
+    Long getMsmeUnitId();
     String getUnitName();
     String getUdyamRegistrationNo();
     String getUnitHolderOrOwnerName();
