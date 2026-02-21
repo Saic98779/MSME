@@ -13,6 +13,7 @@ public class MsmeUnitDetailsDto {
 
     private Long msmeUnitId;
     private Integer stageNumber;
+    private String userId;
 
     private String unitName;
     private String district;

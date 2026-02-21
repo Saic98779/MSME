@@ -18,6 +18,9 @@ public class MsmeUnitDetails {
     @Column(name = "stage_number")
     private Integer stageNumber;
 
+    @Column(name = "user_id")
+    private String userId;
+
     //---------------Unit/MSME----------------- stage1
 
     @Column(name = "district")

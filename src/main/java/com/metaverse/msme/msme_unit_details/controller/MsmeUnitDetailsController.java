@@ -16,6 +16,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -32,11 +35,24 @@ public class MsmeUnitDetailsController {
             description = "Update existing MSME unit information by unit ID"
     )
     @SecurityRequirement(name = "Bearer Authentication")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> updateMsmeUnitDetails(
             @Parameter(description = "MSME Unit ID") @RequestParam(required = false) Long msmeUnitId,
             @RequestBody MsmeUnitDetailsDto request) {
         try {
-            MsmeUnitDetailsDto updated = msmeUnitDetailsService.updateMsmeUnitDetails(msmeUnitId, request);
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            String userId = authentication.getName();
+
+            if (userId == null || "anonymousUser".equals(userId)) {
+                ApplicationAPIResponse<MsmeUnitDetailsDto> response = ApplicationAPIResponse.<MsmeUnitDetailsDto>builder()
+                        .success(false)
+                        .message("User authentication required")
+                        .code(401)
+                        .build();
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+            }
+
+            MsmeUnitDetailsDto updated = msmeUnitDetailsService.updateMsmeUnitDetails(msmeUnitId, request, userId);
 
             ApplicationAPIResponse<MsmeUnitDetailsDto> response = ApplicationAPIResponse.<MsmeUnitDetailsDto>builder()
                     .data(updated)

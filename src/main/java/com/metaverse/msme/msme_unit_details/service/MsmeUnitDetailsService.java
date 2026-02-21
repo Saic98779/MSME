@@ -16,13 +16,19 @@ public class MsmeUnitDetailsService {
     private final MsmeUnitDetailsRepository unitDetailsRepository;
 
     @Transactional
-    public MsmeUnitDetailsDto updateMsmeUnitDetails(Long msmeUnitId, MsmeUnitDetailsDto request) {
+    public MsmeUnitDetailsDto updateMsmeUnitDetails(Long msmeUnitId, MsmeUnitDetailsDto request, String userId) {
         MsmeUnitDetails existing;
         if (msmeUnitId == null) {
             existing = new MsmeUnitDetails();
+            // Set userId for new records
+            existing.setUserId(userId);
         } else {
             existing = unitDetailsRepository.findById(msmeUnitId)
                     .orElseThrow(() -> new RuntimeException("MSME Unit Details not found with slno: " + msmeUnitId));
+            // Update userId for existing records if not already set
+            if (existing.getUserId() == null) {
+                existing.setUserId(userId);
+            }
         }
 
         MsmeUnitDetailsMapper.mapUpdateMsmeUnitDetails(request, existing);
@@ -61,6 +67,7 @@ public class MsmeUnitDetailsService {
 
     private MsmeUnitSearchResponse mapToSearchResponse(MsmeUnitSummary unit) {
         return MsmeUnitSearchResponse.builder()
+                .msmeUnitId(unit.getMsmeUnitId())
                 .unitName(unit.getUnitName())
                 .ownerName(unit.getUnitHolderOrOwnerName())
                 .udyamNumber(unit.getUdyamRegistrationNo())
