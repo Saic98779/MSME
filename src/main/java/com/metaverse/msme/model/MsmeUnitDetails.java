@@ -105,11 +105,9 @@ public class MsmeUnitDetails {
     @Column(name = "communication_Doorno")
     private String communicationDoorNo;
 
-    @Column(name = "communication_locality")
-    private String communicationLocality;
 
-    @Column(name = "communication_street")
-    private String communicationStreet;
+    @Column(name = "communication_locality_street")
+    private String communicationLocalityStreet;
 
     @Column(name = "communication_village")
     private String communicationVillage;

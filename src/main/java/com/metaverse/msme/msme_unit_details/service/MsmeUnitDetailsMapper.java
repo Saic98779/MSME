@@ -60,8 +60,7 @@ public class MsmeUnitDetailsMapper {
             // ---------------- Stage 3 : Communication ----------------
             case 3:
                 setIfNotNull(request.getCommunicationDoorNo(), entity::setCommunicationDoorNo);
-                setIfNotNull(request.getCommunicationLocality(), entity::setCommunicationLocality);
-                setIfNotNull(request.getCommunicationStreet(), entity::setCommunicationStreet);
+                setIfNotNull(request.getCommunicationLocalityStreet(), entity::setCommunicationLocalityStreet);
                 setIfNotNull(request.getCommunicationVillage(), entity::setCommunicationVillage);
                 setIfNotNull(request.getCommunicationMandal(), entity::setCommunicationMandal);
                 setIfNotNull(request.getCommunicationDistrict(), entity::setCommunicationDistrict);
@@ -172,8 +171,7 @@ public class MsmeUnitDetailsMapper {
                 entity.setEmailAddress(request.getEmailAddress());
 
                 entity.setCommunicationDoorNo(request.getCommunicationDoorNo());
-                entity.setCommunicationLocality(request.getCommunicationLocality());
-                entity.setCommunicationStreet(request.getCommunicationStreet());
+                entity.setCommunicationLocalityStreet(request.getCommunicationLocalityStreet());
                 entity.setCommunicationVillage(request.getCommunicationVillage());
                 entity.setCommunicationMandal(request.getCommunicationMandal());
                 entity.setCommunicationDistrict(request.getCommunicationDistrict());
@@ -287,8 +285,7 @@ public class MsmeUnitDetailsMapper {
                 .emailAddress(entity.getEmailAddress())
 
                 .communicationDoorNo(entity.getCommunicationDoorNo())
-                .communicationLocality(entity.getCommunicationLocality())
-                .communicationStreet(entity.getCommunicationStreet())
+                .communicationLocalityStreet(entity.getCommunicationLocalityStreet())
                 .communicationVillage(entity.getCommunicationVillage())
                 .communicationMandal(entity.getCommunicationMandal())
                 .communicationDistrict(entity.getCommunicationDistrict())

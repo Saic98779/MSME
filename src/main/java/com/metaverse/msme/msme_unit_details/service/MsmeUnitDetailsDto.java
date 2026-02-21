@@ -43,8 +43,7 @@ public class MsmeUnitDetailsDto {
     private String emailAddress;
 
     private String communicationDoorNo;
-    private String communicationLocality;
-    private String communicationStreet;
+    private String communicationLocalityStreet;
     private String communicationVillage;
     private String communicationMandal;
     private String communicationDistrict;
