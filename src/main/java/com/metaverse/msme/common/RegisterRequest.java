@@ -11,10 +11,10 @@ import lombok.*;
 @Schema(description = "User registration request payload")
 public class RegisterRequest {
 
-    @Schema(description = "User email address (must be unique)", example = "user@example.com", required = true)
+    @Schema(description = "User email address (must be unique)", example = "saichaitanya550@gmail.com", required = true)
     private String email;
 
-    @Schema(description = "User password (will be encrypted)", example = "SecurePass123!", required = true)
+    @Schema(description = "User password (will be encrypted)", example = "Password123", required = true)
     private String password;
 
     @Schema(description = "Username (must be unique)", example = "johndoe", required = true)

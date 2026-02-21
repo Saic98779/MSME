@@ -17,9 +17,13 @@ public class MsmeUnitDetailsService {
 
     @Transactional
     public MsmeUnitDetailsDto updateMsmeUnitDetails(Long msmeUnitId, MsmeUnitDetailsDto request) {
-
-        MsmeUnitDetails existing = unitDetailsRepository.findById(msmeUnitId)
-                .orElseThrow(() -> new RuntimeException("MSME Unit Details not found with slno: " + msmeUnitId));
+        MsmeUnitDetails existing;
+        if (msmeUnitId == null) {
+            existing = new MsmeUnitDetails();
+        } else {
+            existing = unitDetailsRepository.findById(msmeUnitId)
+                    .orElseThrow(() -> new RuntimeException("MSME Unit Details not found with slno: " + msmeUnitId));
+        }
 
         MsmeUnitDetailsMapper.mapUpdateMsmeUnitDetails(request, existing);
 

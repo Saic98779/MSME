@@ -1,19 +1,23 @@
 package com.metaverse.msme.msme_unit_details.service;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import java.util.List;
+
 @Builder
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class MsmeUnitDetailsDto {
 
     private Long msmeUnitId;
     private Integer stageNumber;
 
+    private String unitName;
     private String district;
-    private String unitAddress;
     private String doorNo;
-    private String street;
-    private String locality;
+    private String localityStreet;
     private String mandal;
     private String village;
     private String pinCode;
@@ -22,7 +26,7 @@ public class MsmeUnitDetailsDto {
     private String totalFemaleEmployees;
     private String totalMaleEmployees;
 
-    private String ltHt;
+    private String typeOfConnection;
     private String serviceNo;
     private String currentStatus;
 
@@ -45,7 +49,6 @@ public class MsmeUnitDetailsDto {
     private String communicationDistrict;
     private String communicationPinCode;
 
-    private String unitName;
     private String enterpriseType;
     private String msmeSector;
     private String organizationType;

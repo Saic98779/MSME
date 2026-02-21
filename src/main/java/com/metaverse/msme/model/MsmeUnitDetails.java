@@ -11,6 +11,7 @@ import java.util.List;
 public class MsmeUnitDetails {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "msme_unit_id")
     private Long msmeUnitId;
 
@@ -28,11 +29,8 @@ public class MsmeUnitDetails {
     @Column(name = "door_no")
     private String doorNo;
 
-    @Column(name = "street")
-    private String street;
-
-    @Column(name = "locality")
-    private String locality;
+    @Column(name = "locality_street")
+    private String localityStreet;
 
     @Column(name = "mandal")
     private String mandal;
@@ -57,8 +55,8 @@ public class MsmeUnitDetails {
 
     //-----------------Electricity-------------------stage4
 
-    @Column(name = "lt_ht")
-    private String ltHt;
+    @Column(name = "type_of_connection")
+    private String typeOfConnection; //type of connection
 
     @Column(name = "service_no")
     private String serviceNo;
@@ -314,4 +312,3 @@ public class MsmeUnitDetails {
     private String communicationAddress;
 
 }
-

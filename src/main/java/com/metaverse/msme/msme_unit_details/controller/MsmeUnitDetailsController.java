@@ -26,14 +26,14 @@ public class MsmeUnitDetailsController {
 
     private final MsmeUnitDetailsService msmeUnitDetailsService;
 
-    @PutMapping("/{msmeUnitId}")
+    @PutMapping("/update")
     @Operation(
             summary = "Update MSME unit details",
             description = "Update existing MSME unit information by unit ID"
     )
     @SecurityRequirement(name = "Bearer Authentication")
     public ResponseEntity<?> updateMsmeUnitDetails(
-            @Parameter(description = "MSME Unit ID") @PathVariable Long msmeUnitId,
+            @Parameter(description = "MSME Unit ID") @RequestParam(required = false) Long msmeUnitId,
             @RequestBody MsmeUnitDetailsDto request) {
         try {
             MsmeUnitDetailsDto updated = msmeUnitDetailsService.updateMsmeUnitDetails(msmeUnitId, request);

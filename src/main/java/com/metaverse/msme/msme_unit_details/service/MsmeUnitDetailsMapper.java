@@ -9,20 +9,32 @@ public class MsmeUnitDetailsMapper {
         if (request.getStageNumber() == null) {
             throw new IllegalArgumentException("Stage number is required");
         }
-
-        entity.setStageNumber(request.getStageNumber());
+        if(request.getStageNumber() > 1) {
+            entity.setStageNumber(request.getStageNumber());
+        }
 
         switch (request.getStageNumber()) {
             // ---------------- Stage 1 : Unit/MSME ----------------
             case 1:
+                entity.setUnitName(request.getUnitName());
                 entity.setDistrict(request.getDistrict());
-                entity.setUnitAddress(request.getUnitAddress());
                 entity.setDoorNo(request.getDoorNo());
-                entity.setStreet(request.getStreet());
-                entity.setLocality(request.getLocality());
+                entity.setLocalityStreet(request.getLocalityStreet());
                 entity.setMandal(request.getMandal());
                 entity.setVillage(request.getVillage());
                 entity.setPinCode(request.getPinCode());
+
+                // Build unitAddress with null-safe concatenation
+                String unitAddress = buildUnitAddress(
+                    request.getDoorNo(),
+                    request.getLocalityStreet(),
+                    request.getMandal(),
+                    request.getVillage(),
+                    request.getDistrict(),
+                    request.getPinCode()
+                );
+                entity.setUnitAddress(unitAddress);
+
                 entity.setOfficeEmail(request.getOfficeEmail());
                 entity.setOfficeContact(request.getOfficeContact());
                 entity.setTotalFemaleEmployees(request.getTotalFemaleEmployees());
@@ -56,7 +68,7 @@ public class MsmeUnitDetailsMapper {
 
             // ---------------- Stage 4 : Electricity ----------------
             case 4:
-                entity.setLtHt(request.getLtHt());
+                entity.setTypeOfConnection(request.getTypeOfConnection());
                 entity.setServiceNo(request.getServiceNo());
                 entity.setCurrentStatus(request.getCurrentStatus());
                 break;
@@ -94,16 +106,78 @@ public class MsmeUnitDetailsMapper {
                 entity.setLatitude(request.getLatitude());
                 entity.setLongitude(request.getLongitude());
                 entity.setBankLoanRequired(request.getBankLoanRequired());
+                break;
 
-                if (request.getSchemeNames() != null) {
-                    entity.getSchemeNames().clear();
-                    entity.getSchemeNames().addAll(request.getSchemeNames());
-                }
+            // ---------------- Stage -1 : Full Save ----------------
+            case -1:
+                // Map all fields for full save
+                entity.setUnitName(request.getUnitName());
+                entity.setDistrict(request.getDistrict());
+                entity.setDoorNo(request.getDoorNo());
+                entity.setLocalityStreet(request.getLocalityStreet());
+                entity.setMandal(request.getMandal());
+                entity.setVillage(request.getVillage());
+                entity.setPinCode(request.getPinCode());
 
-                if (request.getInterestedSchemes() != null) {
-                    entity.getInterestedSchemes().clear();
-                    entity.getInterestedSchemes().addAll(request.getInterestedSchemes());
-                }
+                String fullUnitAddress = buildUnitAddress(
+                    request.getDoorNo(),
+                    request.getLocalityStreet(),
+                    request.getMandal(),
+                    request.getVillage(),
+                    request.getDistrict(),
+                    request.getPinCode()
+                );
+                entity.setUnitAddress(fullUnitAddress);
+
+                entity.setOfficeEmail(request.getOfficeEmail());
+                entity.setOfficeContact(request.getOfficeContact());
+                entity.setTotalFemaleEmployees(request.getTotalFemaleEmployees());
+                entity.setTotalMaleEmployees(request.getTotalMaleEmployees());
+
+                entity.setUnitHolderOrOwnerName(request.getUnitHolderOrOwnerName());
+                entity.setCaste(request.getCaste());
+                entity.setSpecialCategory(request.getSpecialCategory());
+                entity.setGender(request.getGender());
+                entity.setDateOfBirth(request.getDateOfBirth());
+                entity.setQualification(request.getQualification());
+                entity.setPanNo(request.getPanNo());
+                entity.setAadharNo(request.getAadharNo());
+                entity.setMobileNo(request.getMobileNo());
+                entity.setEmailAddress(request.getEmailAddress());
+
+                entity.setCommunicationDoorNo(request.getCommunicationDoorNo());
+                entity.setCommunicationLocality(request.getCommunicationLocality());
+                entity.setCommunicationStreet(request.getCommunicationStreet());
+                entity.setCommunicationVillage(request.getCommunicationVillage());
+                entity.setCommunicationMandal(request.getCommunicationMandal());
+                entity.setCommunicationDistrict(request.getCommunicationDistrict());
+                entity.setCommunicationPinCode(request.getCommunicationPinCode());
+
+                entity.setTypeOfConnection(request.getTypeOfConnection());
+                entity.setServiceNo(request.getServiceNo());
+                entity.setCurrentStatus(request.getCurrentStatus());
+
+                entity.setEnterpriseType(request.getEnterpriseType());
+                entity.setMsmeSector(request.getMsmeSector());
+                entity.setOrganizationType(request.getOrganizationType());
+                entity.setProductDescription(request.getProductDescription());
+
+                entity.setUdyamRegistrationDate(request.getUdyamRegistrationDate());
+                entity.setUdyamRegistrationNo(request.getUdyamRegistrationNo());
+                entity.setGstRegNo(request.getGstRegNo());
+
+                entity.setBankName(request.getBankName());
+                entity.setBranchAddress(request.getBranchAddress());
+                entity.setIfscCode(request.getIfscCode());
+                entity.setUnitCostOrInvestment(request.getUnitCostOrInvestment());
+                entity.setNetTurnoverRupees(request.getNetTurnoverRupees());
+
+                entity.setUnitExists(request.getUnitExists());
+                entity.setUnitWorking(request.getUnitWorking());
+                entity.setBankLoanAvailed(request.getBankLoanAvailed());
+                entity.setLatitude(request.getLatitude());
+                entity.setLongitude(request.getLongitude());
+                entity.setBankLoanRequired(request.getBankLoanRequired());
                 break;
 
             default:
@@ -118,14 +192,12 @@ public class MsmeUnitDetailsMapper {
         }
 
         return MsmeUnitDetailsDto.builder()
-                .msmeUnitId(entity.getMsmeUnitId())
+                .msmeUnitId(entity.getMsmeUnitId()!=null ? entity.getMsmeUnitId() : null)
                 .stageNumber(entity.getStageNumber())
 
                 .district(entity.getDistrict())
-                .unitAddress(entity.getUnitAddress())
                 .doorNo(entity.getDoorNo())
-                .street(entity.getStreet())
-                .locality(entity.getLocality())
+                .localityStreet(entity.getLocalityStreet())
                 .mandal(entity.getMandal())
                 .village(entity.getVillage())
                 .pinCode(entity.getPinCode())
@@ -134,7 +206,7 @@ public class MsmeUnitDetailsMapper {
                 .totalFemaleEmployees(entity.getTotalFemaleEmployees())
                 .totalMaleEmployees(entity.getTotalMaleEmployees())
 
-                .ltHt(entity.getLtHt())
+                .typeOfConnection(entity.getTypeOfConnection())
                 .serviceNo(entity.getServiceNo())
                 .currentStatus(entity.getCurrentStatus())
 
@@ -183,5 +255,44 @@ public class MsmeUnitDetailsMapper {
                 .interestedSchemes(entity.getInterestedSchemes())
 
                 .build();
+    }
+
+    /**
+     * Helper method to build unit address safely, handling null values
+     */
+    private static String buildUnitAddress(String doorNo, String localityStreet, String mandal,
+                                           String village, String district, String pinCode) {
+        StringBuilder address = new StringBuilder();
+
+        if (doorNo != null && !doorNo.isEmpty()) {
+            address.append(doorNo);
+        }
+
+        if (localityStreet != null && !localityStreet.isEmpty()) {
+            if (address.length() > 0) address.append(", ");
+            address.append(localityStreet);
+        }
+
+        if (mandal != null && !mandal.isEmpty()) {
+            if (address.length() > 0) address.append(", ");
+            address.append(mandal);
+        }
+
+        if (village != null && !village.isEmpty()) {
+            if (address.length() > 0) address.append(", ");
+            address.append(village);
+        }
+
+        if (district != null && !district.isEmpty()) {
+            if (address.length() > 0) address.append(", ");
+            address.append(district);
+        }
+
+        if (pinCode != null && !pinCode.isEmpty()) {
+            if (address.length() > 0) address.append(" - ");
+            address.append(pinCode);
+        }
+
+        return address.toString();
     }
 }
