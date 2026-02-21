@@ -15,99 +15,113 @@ public class MsmeUnitDetailsMapper {
         switch (request.getStageNumber()) {
             // ---------------- Stage 1 : Unit/MSME ----------------
             case 1:
-                entity.setDistrict(request.getDistrict());
-                entity.setUnitAddress(request.getUnitAddress());
-                entity.setDoorNo(request.getDoorNo());
-                entity.setStreet(request.getStreet());
-                entity.setLocality(request.getLocality());
-                entity.setMandal(request.getMandal());
-                entity.setVillage(request.getVillage());
-                entity.setPinCode(request.getPinCode());
-                entity.setOfficeEmail(request.getOfficeEmail());
-                entity.setOfficeContact(request.getOfficeContact());
-                entity.setTotalFemaleEmployees(request.getTotalFemaleEmployees());
-                entity.setTotalMaleEmployees(request.getTotalMaleEmployees());
+                setIfNotNull(request.getDistrict(), entity::setDistrict);
+                setIfNotNull(request.getUnitAddress(), entity::setUnitAddress);
+                setIfNotNull(request.getDoorNo(), entity::setDoorNo);
+                setIfNotNull(request.getStreet(), entity::setStreet);
+                setIfNotNull(request.getLocality(), entity::setLocality);
+                setIfNotNull(request.getMandal(), entity::setMandal);
+                setIfNotNull(request.getVillage(), entity::setVillage);
+                setIfNotNull(request.getPinCode(), entity::setPinCode);
+                setIfNotNull(request.getOfficeEmail(), entity::setOfficeEmail);
+                setIfNotNull(request.getOfficeContact(), entity::setOfficeContact);
+                setIfNotNull(request.getTotalFemaleEmployees(), entity::setTotalFemaleEmployees);
+                setIfNotNull(request.getTotalMaleEmployees(), entity::setTotalMaleEmployees);
                 break;
 
             // ---------------- Stage 2 : Entrepreneur ----------------
             case 2:
-                entity.setUnitHolderOrOwnerName(request.getUnitHolderOrOwnerName());
-                entity.setCaste(request.getCaste());
-                entity.setSpecialCategory(request.getSpecialCategory());
-                entity.setGender(request.getGender());
-                entity.setDateOfBirth(request.getDateOfBirth());
-                entity.setQualification(request.getQualification());
-                entity.setPanNo(request.getPanNo());
-                entity.setAadharNo(request.getAadharNo());
-                entity.setMobileNo(request.getMobileNo());
-                entity.setEmailAddress(request.getEmailAddress());
+                setIfNotNull(request.getUnitHolderOrOwnerName(), entity::setUnitHolderOrOwnerName);
+                setIfNotNull(request.getCaste(), entity::setCaste);
+                setIfNotNull(request.getSpecialCategory(), entity::setSpecialCategory);
+                setIfNotNull(request.getGender(), entity::setGender);
+                setIfNotNull(request.getDateOfBirth(), entity::setDateOfBirth);
+                setIfNotNull(request.getQualification(), entity::setQualification);
+                setIfNotNull(request.getPanNo(), entity::setPanNo);
+                setIfNotNull(request.getAadharNo(), entity::setAadharNo);
+                setIfNotNull(request.getMobileNo(), entity::setMobileNo);
+                setIfNotNull(request.getEmailAddress(), entity::setEmailAddress);
                 break;
 
             // ---------------- Stage 3 : Communication ----------------
             case 3:
-                entity.setCommunicationDoorNo(request.getCommunicationDoorNo());
-                entity.setCommunicationLocality(request.getCommunicationLocality());
-                entity.setCommunicationStreet(request.getCommunicationStreet());
-                entity.setCommunicationVillage(request.getCommunicationVillage());
-                entity.setCommunicationMandal(request.getCommunicationMandal());
-                entity.setCommunicationDistrict(request.getCommunicationDistrict());
-                entity.setCommunicationPinCode(request.getCommunicationPinCode());
+                setIfNotNull(request.getCommunicationDoorNo(), entity::setCommunicationDoorNo);
+                setIfNotNull(request.getCommunicationLocality(), entity::setCommunicationLocality);
+                setIfNotNull(request.getCommunicationStreet(), entity::setCommunicationStreet);
+                setIfNotNull(request.getCommunicationVillage(), entity::setCommunicationVillage);
+                setIfNotNull(request.getCommunicationMandal(), entity::setCommunicationMandal);
+                setIfNotNull(request.getCommunicationDistrict(), entity::setCommunicationDistrict);
+                setIfNotNull(request.getCommunicationPinCode(), entity::setCommunicationPinCode);
                 break;
 
             // ---------------- Stage 4 : Electricity ----------------
             case 4:
-                entity.setLtHt(request.getLtHt());
-                entity.setServiceNo(request.getServiceNo());
-                entity.setCurrentStatus(request.getCurrentStatus());
+                setIfNotNull(request.getLtHt(), entity::setLtHt);
+                setIfNotNull(request.getServiceNo(), entity::setServiceNo);
+                setIfNotNull(request.getCurrentStatus(), entity::setCurrentStatus);
                 break;
 
             // ---------------- Stage 5 : Activity ----------------
             case 5:
-                entity.setUnitName(request.getUnitName());
-                entity.setEnterpriseType(request.getEnterpriseType());
-                entity.setMsmeSector(request.getMsmeSector());
-                entity.setOrganizationType(request.getOrganizationType());
-                entity.setProductDescription(request.getProductDescription());
+                setIfNotNull(request.getUnitName(), entity::setUnitName);
+                setIfNotNull(request.getEnterpriseType(), entity::setEnterpriseType);
+                setIfNotNull(request.getMsmeSector(), entity::setMsmeSector);
+                setIfNotNull(request.getOrganizationType(), entity::setOrganizationType);
+                setIfNotNull(request.getProductDescription(), entity::setProductDescription);
                 break;
 
             // ---------------- Stage 6 : Registration ----------------
             case 6:
-                entity.setUdyamRegistrationDate(request.getUdyamRegistrationDate());
-                entity.setUdyamRegistrationNo(request.getUdyamRegistrationNo());
-                entity.setGstRegNo(request.getGstRegNo());
+                setIfNotNull(request.getUdyamRegistrationDate(), entity::setUdyamRegistrationDate);
+                setIfNotNull(request.getUdyamRegistrationNo(), entity::setUdyamRegistrationNo);
+                setIfNotNull(request.getGstRegNo(), entity::setGstRegNo);
                 break;
 
             // ---------------- Stage 7 : Financial ----------------
             case 7:
-                entity.setBankName(request.getBankName());
-                entity.setBranchAddress(request.getBranchAddress());
-                entity.setIfscCode(request.getIfscCode());
-                entity.setUnitCostOrInvestment(request.getUnitCostOrInvestment());
-                entity.setNetTurnoverRupees(request.getNetTurnoverRupees());
+                setIfNotNull(request.getBankName(), entity::setBankName);
+                setIfNotNull(request.getBranchAddress(), entity::setBranchAddress);
+                setIfNotNull(request.getIfscCode(), entity::setIfscCode);
+                setIfNotNull(request.getUnitCostOrInvestment(), entity::setUnitCostOrInvestment);
+                setIfNotNull(request.getNetTurnoverRupees(), entity::setNetTurnoverRupees);
                 break;
 
             // ---------------- Stage 8 : Loan & Geo ----------------
             case 8:
-                entity.setUnitExists(request.getUnitExists());
-                entity.setUnitWorking(request.getUnitWorking());
-                entity.setBankLoanAvailed(request.getBankLoanAvailed());
-                entity.setLatitude(request.getLatitude());
-                entity.setLongitude(request.getLongitude());
-                entity.setBankLoanRequired(request.getBankLoanRequired());
+                setIfNotNull(request.getUnitExists(), entity::setUnitExists);
+                setIfNotNull(request.getUnitWorking(), entity::setUnitWorking);
+                setIfNotNull(request.getBankLoanAvailed(), entity::setBankLoanAvailed);
+                setIfNotNull(request.getLatitude(), entity::setLatitude);
+                setIfNotNull(request.getLongitude(), entity::setLongitude);
+                setIfNotNull(request.getBankLoanRequired(), entity::setBankLoanRequired);
 
                 if (request.getSchemeNames() != null) {
-                    entity.getSchemeNames().clear();
+                    if (entity.getSchemeNames() == null) {
+                        entity.setSchemeNames(new java.util.ArrayList<>());
+                    } else {
+                        entity.getSchemeNames().clear();
+                    }
                     entity.getSchemeNames().addAll(request.getSchemeNames());
                 }
 
                 if (request.getInterestedSchemes() != null) {
-                    entity.getInterestedSchemes().clear();
+                    if (entity.getInterestedSchemes() == null) {
+                        entity.setInterestedSchemes(new java.util.ArrayList<>());
+                    } else {
+                        entity.getInterestedSchemes().clear();
+                    }
                     entity.getInterestedSchemes().addAll(request.getInterestedSchemes());
                 }
                 break;
 
             default:
                 throw new IllegalArgumentException("Invalid stage number");
+        }
+    }
+
+    private static <T> void setIfNotNull(T value, java.util.function.Consumer<T> setter) {
+        if (value != null) {
+            setter.accept(value);
         }
     }
 

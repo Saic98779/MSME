@@ -57,6 +57,7 @@ public class MsmeUnitDetailsService {
 
     private MsmeUnitSearchResponse mapToSearchResponse(MsmeUnitSummary unit) {
         return MsmeUnitSearchResponse.builder()
+                .msmeUnitId(unit.getMsmeUnitId())
                 .unitName(unit.getUnitName())
                 .ownerName(unit.getUnitHolderOrOwnerName())
                 .udyamNumber(unit.getUdyamRegistrationNo())

@@ -11,6 +11,9 @@ import lombok.*;
 @Schema(description = "MSME Unit search response with essential details")
 public class MsmeUnitSearchResponse {
 
+    @Schema(description = "Id of the MSME unit", example = "1")
+    private Long msmeUnitId;
+
     @Schema(description = "Name of the MSME unit", example = "Sameer Industries")
     private String unitName;
 
