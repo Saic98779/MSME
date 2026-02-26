@@ -69,12 +69,14 @@ public class SecurityCross {
                                 "/msme/webjars/**"
                         ).permitAll()
 
-                        // Allow authentication endpoints (login/register - no authentication needed)
+                        // Allow authentication endpoints (login/register/validate-token - no authentication needed)
                         .requestMatchers(
                                 "/api/auth/login",
                                 "/api/auth/register",
+                                "/api/auth/validate-token",
                                 "/msme/api/auth/login",
-                                "/msme/api/auth/register"
+                                "/msme/api/auth/register",
+                                "/msme/api/auth/validate-token"
                         ).permitAll()
 
                         // ALL OTHER ENDPOINTS REQUIRE AUTHENTICATION

@@ -5,6 +5,7 @@ import com.metaverse.msme.common.AuthResponse;
 import com.metaverse.msme.common.LoginRequest;
 import com.metaverse.msme.common.RegisterRequest;
 import com.metaverse.msme.service.AuthService;
+import com.metaverse.msme.service.JwtTokenProvider;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -17,6 +18,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -36,6 +39,9 @@ public class AuthController {
 
     @Autowired
     private AuthService authService;
+
+    @Autowired
+    private JwtTokenProvider jwtTokenProvider;
 
     @PostMapping("/register")
     @Operation(
@@ -126,10 +132,29 @@ public class AuthController {
     })
     @SecurityRequirement(name = "Bearer Authentication")
     public ResponseEntity<ApplicationAPIResponse<Object>> validateToken(
-            @Parameter(description = "JWT Bearer token", required = true, example = "Bearer eyJhbGciOiJIUzUxMiJ9...")
-            @RequestHeader("Authorization") String token) {
+            @Parameter(description = "JWT Bearer token via Authorization header", required = false)
+            @RequestHeader(value = "Authorization", required = false) String token,
+            @Parameter(description = "JWT token as query param (raw token or Bearer <token>)", required = false)
+            @RequestParam(value = "token", required = false) String tokenParam) {
         try {
-            if (token == null || !token.startsWith("Bearer ")) {
+            String headerToken = (token == null) ? null : token.trim();
+            String queryToken = (tokenParam == null) ? null : tokenParam.trim();
+            String providedToken = (headerToken != null && !headerToken.isBlank()) ? headerToken : queryToken;
+
+            if (providedToken == null || providedToken.isBlank()) {
+                ApplicationAPIResponse<Object> response = ApplicationAPIResponse.builder()
+                        .success(false)
+                        .message("Token is required")
+                        .code(400)
+                        .build();
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+            }
+
+            String jwt = providedToken.startsWith("Bearer ")
+                    ? providedToken.substring(7).trim()
+                    : providedToken;
+
+            if (jwt.isBlank()) {
                 ApplicationAPIResponse<Object> response = ApplicationAPIResponse.builder()
                         .success(false)
                         .message("Invalid token format")
@@ -138,8 +163,18 @@ public class AuthController {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
             }
 
-            String jwt = token.substring(7);
+            // Actually validate the token
+            if (!jwtTokenProvider.validateToken(jwt)) {
+                ApplicationAPIResponse<Object> response = ApplicationAPIResponse.builder()
+                        .success(false)
+                        .message("Token is invalid or expired")
+                        .code(401)
+                        .build();
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+            }
+
             ApplicationAPIResponse<Object> response = ApplicationAPIResponse.builder()
+                    .data(Map.of("expiresAt", jwtTokenProvider.getExpirationDateFromToken(jwt)))
                     .success(true)
                     .message("Token is valid")
                     .code(200)
@@ -155,4 +190,3 @@ public class AuthController {
         }
     }
 }
-
