@@ -46,15 +46,12 @@ public class MsmeUnitDetailsService {
     }
 
     @Transactional(readOnly = true)
-    public Page<MsmeUnitSearchResponse> searchMsmeUnits(MsmeUnitSearchRequest request, int page, int size) {
+    public Page<MsmeUnitSearchResponse> searchMsmeUnits(MsmeUnitSearchRequest request) {
         MsmeUnitSearchRequest safeRequest = request != null ? request : new MsmeUnitSearchRequest();
-
-        int resolvedPage = Math.max(page, 0);
-        int resolvedSize = size <= 0 ? 10 : Math.min(size, 100);
 
         Specification<MsmeUnitDetails> specification = MsmeUnitSpecification.searchByCriteria(safeRequest);
 
-        Pageable pageable = PageRequest.of(resolvedPage, resolvedSize);
+        Pageable pageable = PageRequest.of(request.getPage(), request.getSize());
 
         Page<MsmeUnitSummary> resultPage = unitDetailsRepository.findAllSummaries(specification, pageable);
 
