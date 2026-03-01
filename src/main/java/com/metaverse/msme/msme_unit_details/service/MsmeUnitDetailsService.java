@@ -1,7 +1,10 @@
 package com.metaverse.msme.msme_unit_details.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.metaverse.msme.model.MsmeUnitDetails;
+import com.metaverse.msme.model.MsmeUnitDetailsHistory;
 import com.metaverse.msme.repository.MsmeUnitDetailsRepository;
+import com.metaverse.msme.repository.MsmeUnitDetailsHistoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -10,10 +13,14 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+
 @Service
 @RequiredArgsConstructor
 public class MsmeUnitDetailsService {
     private final MsmeUnitDetailsRepository unitDetailsRepository;
+    private final MsmeUnitDetailsHistoryRepository historyRepository;
+    private final ObjectMapper objectMapper;
 
     @Transactional
     public MsmeUnitDetailsDto updateMsmeUnitDetails(Long msmeUnitId, MsmeUnitDetailsDto request, String userId) {
@@ -33,7 +40,12 @@ public class MsmeUnitDetailsService {
 
         MsmeUnitDetailsMapper.mapUpdateMsmeUnitDetails(request, existing);
 
-        return MsmeUnitDetailsMapper.toMsmeUnitDetailsDto(unitDetailsRepository.save(existing));
+        MsmeUnitDetails saved = unitDetailsRepository.save(existing);
+
+        // Save to history table
+        saveToHistory(saved, userId);
+
+        return MsmeUnitDetailsMapper.toMsmeUnitDetailsDto(saved);
     }
 
     public MsmeUnitDetailsDto getMsmeUnitById(Long msmeUnitId) {
@@ -73,6 +85,22 @@ public class MsmeUnitDetailsService {
                 .mandal(unit.getMandal())
                 .village(unit.getVillage())
                 .build();
+    }
+
+
+    private void saveToHistory(MsmeUnitDetails details, String updatedBy) {
+        com.fasterxml.jackson.databind.DeserializationFeature feature = com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES;
+        MsmeUnitDetailsHistory history = objectMapper.copy()
+                .disable(feature)
+                .convertValue(details, MsmeUnitDetailsHistory.class);
+
+        history.setHistoryId(null);
+
+        history.setUpdatedBy(updatedBy);
+        history.setUpdatedAt(LocalDateTime.now());
+        history.setChangeDescription("MSME Unit Details Updated");
+
+        historyRepository.save(history);
     }
 
 }
