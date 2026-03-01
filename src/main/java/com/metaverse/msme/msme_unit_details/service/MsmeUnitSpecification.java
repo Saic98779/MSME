@@ -64,6 +64,16 @@ public class MsmeUnitSpecification {
                 ));
             }
 
+            if (request.getStageNumber() != null) {
+                int stageNumber = request.getStageNumber();
+                if (stageNumber < 7) {
+                    predicates.add(criteriaBuilder.lessThan(root.get("stageNumber"),7));
+
+                } else if (stageNumber == 7) {
+                    predicates.add(criteriaBuilder.equal(root.get("stageNumber"), 7));
+                }
+            }
+
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };
     }

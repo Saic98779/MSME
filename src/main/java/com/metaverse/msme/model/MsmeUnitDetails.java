@@ -1,13 +1,16 @@
 package com.metaverse.msme.model;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 
 import java.util.List;
 
-@Data
 @Entity
 @Table(name = "msme_unit_details")
+@AllArgsConstructor
+@NoArgsConstructor
+@Setter
+@Getter
 public class MsmeUnitDetails {
 
     @Id
@@ -178,7 +181,7 @@ public class MsmeUnitDetails {
 
     @ElementCollection
     @CollectionTable(name = "msme_schemes_availed",
-            joinColumns = @JoinColumn(name = "slno"))
+            joinColumns = @JoinColumn(name = "msme_unit_id"))
     @Column(name = "scheme_name")
     private List<String> schemeNames;
 
@@ -193,7 +196,7 @@ public class MsmeUnitDetails {
 
     @ElementCollection
     @CollectionTable(name = "msme_schemes_interested",
-            joinColumns = @JoinColumn(name = "slno"))
+            joinColumns = @JoinColumn(name = "msme_unit_id"))
     @Column(name = "scheme_name")
     private List<String> interestedSchemes;
 

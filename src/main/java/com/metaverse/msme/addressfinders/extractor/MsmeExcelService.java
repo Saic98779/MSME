@@ -1,9 +1,9 @@
 package com.metaverse.msme.addressfinders.extractor;
 
-import com.metaverse.msme.model.MsmeUnitDetails;
-import com.metaverse.msme.repository.MsmeUnitDetailsRepository;
 import com.metaverse.msme.addressfinders.service.AddressParseResult;
 import com.metaverse.msme.addressfinders.service.AddressParseService;
+import com.metaverse.msme.model.MsmeUnitDetails;
+import com.metaverse.msme.repository.MsmeUnitDetailsRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.apache.poi.ss.usermodel.Row;
@@ -16,11 +16,13 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
-import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
@@ -76,86 +78,17 @@ public class MsmeExcelService {
             "paidupcapital"
     );
 
-    private static final List<String> PARSED_COLUMNS = List.of(
-            "PARSED_VILLAGE",
-            "PARSED_MANDAL",
-            "PARSED_DISTRICT",
-            "ADDRESS_STATUS",
-            "DETAILS"
-    );
 
-    /* =========================================================
-       EXCEL GENERATION
-       ========================================================= */
-    public byte[] generateExcel(Integer pageNo,Integer pageSize) {
-
-        ExecutorService pool =
-                Executors.newFixedThreadPool(Math.max(2, Runtime.getRuntime().availableProcessors()));
-
-        try (SXSSFWorkbook workbook = new SXSSFWorkbook(1000);
-                ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-
-            workbook.setCompressTempFiles(true);
-            Sheet sheet = workbook.createSheet("MSME ADDRESS PARSE");
-            createHeader(sheet);
-
-            List<MsmeUnitDetails> records = repository.findAll(PageRequest.of(pageNo,pageSize)).getContent();
-            int rowIndex = 1;
-
-            List<CompletableFuture<AddressParseResult>> futures =
-                    records.stream()
-                            .map(r -> CompletableFuture.supplyAsync(
-                                    () -> parseSafely(r), pool))
-                            .collect(Collectors.toList());
-
-            CompletableFuture.allOf(
-                    futures.toArray(new CompletableFuture[0])
-            ).join();
-
-            for (int i = 0; i < records.size(); i++) {
-
-                MsmeUnitDetails u = records.get(i);
-                AddressParseResult result = futures.get(i).join();
-
-                Row row = sheet.createRow(rowIndex++);
-                int col = 0;
-
-                // ALL MSME COLUMNS
-                for (String field : MSME_COLUMNS) {
-                    row.createCell(col++).setCellValue(getFieldValue(u, field));
-                }
-
-                // PARSED COLUMNS
-                row.createCell(col++).setCellValue(value(result.getVillage()));
-                row.createCell(col++).setCellValue(value(result.getMandal()));
-                row.createCell(col++).setCellValue(u.getDistrict());
-                row.createCell(col++).setCellValue(resolveAddressStatus(result));
-                row.createCell(col).setCellValue(buildDetails(result));
-            }
-
-            setColumnWidths(sheet);
-            workbook.write(out);
-            workbook.dispose();
-
-            return out.toByteArray();
-
-        } catch (Exception e) {
-            log.error("Excel generation failed", e);
-            throw new RuntimeException(e);
-        } finally {
-            pool.shutdown();
-        }
-    }
 
     /* =========================================================
        HELPERS
        ========================================================= */
 
-    private AddressParseResult parseSafely(MsmeUnitDetails u) {
+    private AddressParseResult parseSafely(MsmeUnitDetails u, String districtName) {
         try {
             if (u.getUnitAddress() != null &&
                     !"null".equalsIgnoreCase(u.getUnitAddress())) {
-                return addressParseService.parse("mulugu", u.getUnitAddress());
+                return addressParseService.parse(districtName, u.getUnitAddress());
             }
         } catch (Exception e) {
             log.debug("Parse failed for slno={}", u.getMsmeUnitId(), e);
@@ -164,31 +97,17 @@ public class MsmeExcelService {
                 MandalDetectionResult.notFound());
     }
 
-    private String getFieldValue(MsmeUnitDetails u, String fieldName) {
-        try {
-            Field f = MsmeUnitDetails.class.getDeclaredField(fieldName);
-            f.setAccessible(true);
-            Object v = f.get(u);
-            return v == null ? "" : v.toString();
-        } catch (Exception e) {
-            return "";
-        }
-    }
-
     private void createHeader(Sheet sheet) {
         Row header = sheet.createRow(0);
         int col = 0;
 
-        for (String c : MSME_COLUMNS) {
-            header.createCell(col++).setCellValue(c.toUpperCase());
-        }
         for (String c : PARSED_COLUMNS) {
             header.createCell(col++).setCellValue(c);
         }
     }
 
     private void setColumnWidths(Sheet sheet) {
-        int totalCols = MSME_COLUMNS.size() + PARSED_COLUMNS.size();
+        int totalCols = PARSED_COLUMNS.size();
         for (int i = 0; i < totalCols; i++) {
             sheet.setColumnWidth(i, 6000);
         }
@@ -213,24 +132,107 @@ public class MsmeExcelService {
         return o == null ? "" : o.toString();
     }
 
-    private String resolveAddressStatus(AddressParseResult result) {
 
-        // Mandal ambiguity overrides village success
-        if (result.getMandalStatus() != null
-                && result.getMandalStatus() != MandalDetectionStatus.SINGLE_MANDAL) {
+    public byte[] generateExcelUnitAddress(Integer startAfterSlno, int totalRecords,String districtName) {
 
-            return result.getMandalStatus().name();
+        ExecutorService pool = Executors.newFixedThreadPool(Math.max(2, Runtime.getRuntime().availableProcessors()));
+        try (
+                SXSSFWorkbook workbook = new SXSSFWorkbook(1000); // keep a larger window to reduce flush I/O
+                ByteArrayOutputStream out = new ByteArrayOutputStream()
+        ) {
+
+            workbook.setCompressTempFiles(true);
+            Sheet sheet = workbook.createSheet("MSME ADDRESS PARSE");
+            createHeader(sheet);
+
+            int rowIndex = 1;
+            int processed = 0;
+            Integer lastId = Objects.requireNonNullElse(startAfterSlno, 0);
+
+            while (processed < totalRecords) {
+
+                // fetch next chunk without OFFSET
+                List<MsmeUnitDetails> chunk = repository.findNextChunk(lastId, PageRequest.of(0, CHUNK_SIZE));
+
+                System.err.println(chunk);
+                if (chunk == null || chunk.isEmpty()) {
+                    break;
+                }
+
+                // parse in parallel but preserve order
+                List<CompletableFuture<AddressParseResult>> futures = new ArrayList<>(chunk.size());
+
+                for (MsmeUnitDetails u : chunk) {
+                    CompletableFuture<AddressParseResult> f = CompletableFuture.supplyAsync(() -> parseSafely(u,districtName), pool);
+                    futures.add(f);
+                }
+
+                // wait for all to complete
+                CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+
+                // collect results in same order as chunk
+                List<AddressParseResult> results = futures.stream()
+                        .map(CompletableFuture::join)
+                        .collect(Collectors.toList());
+
+                for (int i = 0; i < chunk.size(); i++) {
+                    System.out.println("Processed row number: " + rowIndex);
+                    MsmeUnitDetails u = chunk.get(i);
+
+                    AddressParseResult result = results.get(i);
+
+                    Row row = sheet.createRow(rowIndex++);
+
+                    row.createCell(0).setCellValue(value(u.getMsmeUnitId()));
+                    row.createCell(1).setCellValue(value(u.getDepartmentName()));
+                    row.createCell(2).setCellValue(value(u.getUnitAddress()));
+                    row.createCell(3).setCellValue(value(u.getVillage()));
+                    row.createCell(4).setCellValue(value(result.getVillage()));
+                    row.createCell(5).setCellValue(value(result.getMandal()));
+                    row.createCell(6).setCellValue(districtName);
+                    row.createCell(7).setCellValue(result.getVillageStatus() != null ? result.getVillageStatus().name() :  result.getMandalStatus().name());
+                    row.createCell(8).setCellValue(buildDetails(result));
+
+                    lastId = Integer.valueOf(Math.toIntExact(u.getMsmeUnitId()));
+                }
+
+                processed += chunk.size();
+
+                log.debug("Processed {} records, lastId={}", processed, lastId);
+            }
+
+            setColumnWidths(sheet);
+
+            workbook.write(out);
+            workbook.dispose();
+
+            return out.toByteArray();
+
+        } catch (Exception e) {
+            log.error("Excel generation failed", e);
+            throw new RuntimeException("Excel generation failed", e);
+        } finally {
+            pool.shutdown();
+            try {
+                if (!pool.awaitTermination(30, TimeUnit.SECONDS)) {
+                    pool.shutdownNow();
+                }
+            } catch (InterruptedException ignored) {
+                pool.shutdownNow();
+                Thread.currentThread().interrupt();
+            }
         }
-
-        // Mandal resolved → now village matters
-        if (result.getVillageStatus() != null) {
-            return result.getVillageStatus().name();
-        }
-
-        // Fallback
-        return result.getMandalStatus() != null
-                ? result.getMandalStatus().name()
-                : "NOT_FOUND";
     }
+    private static final List<String> PARSED_COLUMNS = List.of(
+            "MSME_UNIT_ID",
+            "DEPARTMENT_NAME",
+            "UNIT_ADDRESS",
+            "VILLAGE",
+            "PARSED_VILLAGE",
+            "PARSED_MANDAL",
+            "PARSED_DISTRICT",
+            "ADDRESS_STATUS",
+            "DETAILS"
+    );
 
 }

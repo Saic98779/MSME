@@ -9,4 +9,5 @@ public interface MsmeUnitSummary {
     String getDistrict();
     String getMandal();
     String getVillage();
+    Integer getStageNumber();
 }

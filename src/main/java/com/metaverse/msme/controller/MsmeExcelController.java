@@ -19,12 +19,12 @@ public class MsmeExcelController {
         this.excelService = excelService;
     }
 
-    @GetMapping("/download-excel")
-    public ResponseEntity<byte[]> downloadExcel(@RequestParam(defaultValue = "0") int start, @RequestParam(defaultValue = "10") int end) {
+    @GetMapping("/download-excel-unitaddress")
+    public ResponseEntity<byte[]> downloadExcelUnitAddress(@RequestParam(defaultValue = "0") int start, @RequestParam(defaultValue = "10") int end, String districtName) {
 
         byte[] excel = null;
         try {
-            excel = excelService.generateExcel(start,end);
+            excel = excelService.generateExcelUnitAddress(start,end,districtName);
 
         } catch (Exception e) {
             e.printStackTrace();

@@ -33,4 +33,6 @@ public class MsmeUnitSearchRequest {
 
     @Schema(description = "Page size. Used if query params are not provided.", example = "10")
     private Integer size;
+
+    private Integer stageNumber;
 }

@@ -84,6 +84,7 @@ public class MsmeUnitDetailsService {
                 .district(unit.getDistrict())
                 .mandal(unit.getMandal())
                 .village(unit.getVillage())
+                .stageNumber(unit.getStageNumber())
                 .build();
     }
 

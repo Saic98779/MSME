@@ -18,7 +18,7 @@ public interface MsmeUnitDetailsRepository extends JpaRepository<MsmeUnitDetails
     List<MsmeUnitDetails> findByVillageIgnoreCaseAndMandalIgnoreCase(String village, String mandal);
 
     @Query("SELECT u FROM MsmeUnitDetails u WHERE u.msmeUnitId > :after ORDER BY u.msmeUnitId ASC")
-    List<MsmeUnitDetails> findNextChunk(@Param("after") Long after, Pageable pageable);
+    List<MsmeUnitDetails> findNextChunk(@Param("after") Integer after, Pageable pageable);
 
     default Page<MsmeUnitSummary> findAllSummaries(Specification<MsmeUnitDetails> spec, Pageable pageable) {
         return findBy(spec, query -> query.as(MsmeUnitSummary.class).page(pageable));
