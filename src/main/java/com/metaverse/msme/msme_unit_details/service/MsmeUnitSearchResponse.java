@@ -35,5 +35,7 @@ public class MsmeUnitSearchResponse {
 
     @Schema(description = "Village name", example = "Bollaram")
     private String village;
+
+    private Integer stageNumber;
 }
 
