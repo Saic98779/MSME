@@ -6,75 +6,60 @@ import org.springframework.data.jpa.domain.Specification;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class MsmeUnitSpecification {
 
     public static Specification<MsmeUnitDetails> searchByCriteria(MsmeUnitSearchRequest request) {
-        return (root, query, criteriaBuilder) -> {
+
+        return (root, query, cb) -> {
+
             List<Predicate> predicates = new ArrayList<>();
 
-            // District filter - multiple selection (case-insensitive, trimmed)
-            if (request.getDistricts() != null && !request.getDistricts().isEmpty()) {
-                List<String> districts = request.getDistricts().stream()
-                        .filter(value -> value != null && !value.trim().isEmpty())
-                        .map(value -> value.trim().toLowerCase())
-                        .toList();
-                if (!districts.isEmpty()) {
-                    predicates.add(criteriaBuilder.lower(root.get("district")).in(districts));
-                }
+            // Mandal filter
+            extractFirst(request.getMandals())
+                    .ifPresent(mandal -> predicates.add(cb.equal(cb.lower(root.get("mandal")), mandal)));
+
+            // Village filter
+            extractFirst(request.getVillages())
+                    .ifPresent(village -> predicates.add(cb.equal(cb.lower(root.get("village")), village)));
+
+            // Unit Name
+            if (hasValue(request.getUnitName())) {
+                predicates.add(cb.like(cb.lower(root.get("unitName")),
+                        "%" + request.getUnitName().trim().toLowerCase() + "%"));
             }
 
-            // Mandal filter - multiple selection (case-insensitive, trimmed)
-            if (request.getMandals() != null && !request.getMandals().isEmpty()) {
-                List<String> mandals = request.getMandals().stream()
-                        .filter(value -> value != null && !value.trim().isEmpty())
-                        .map(value -> value.trim().toLowerCase())
-                        .toList();
-                if (!mandals.isEmpty()) {
-                    predicates.add(criteriaBuilder.lower(root.get("mandal")).in(mandals));
-                }
+            // Mobile Number
+            if (hasValue(request.getMobileNumber())) {
+                predicates.add(cb.like(root.get("mobileNo"),
+                        "%" + request.getMobileNumber().trim() + "%"));
             }
 
-            // Village filter - multiple selection (case-insensitive, trimmed)
-            if (request.getVillages() != null && !request.getVillages().isEmpty()) {
-                List<String> villages = request.getVillages().stream()
-                        .filter(value -> value != null && !value.trim().isEmpty())
-                        .map(value -> value.trim().toLowerCase())
-                        .toList();
-                if (!villages.isEmpty()) {
-                    predicates.add(criteriaBuilder.lower(root.get("village")).in(villages));
-                }
-            }
-
-            // Unit name filter - partial match (case-insensitive)
-            if (request.getUnitName() != null && !request.getUnitName().trim().isEmpty()) {
-                String unitName = request.getUnitName().trim().toLowerCase();
-                predicates.add(criteriaBuilder.like(
-                        criteriaBuilder.lower(root.get("unitName")),
-                        "%" + unitName + "%"
-                ));
-            }
-
-            // Mobile number filter - exact match or partial match
-            if (request.getMobileNumber() != null && !request.getMobileNumber().trim().isEmpty()) {
-                String mobile = request.getMobileNumber().trim();
-                predicates.add(criteriaBuilder.like(
-                        root.get("mobileNo"),
-                        "%" + mobile + "%"
-                ));
-            }
-
+            // Stage Number
             if (request.getStageNumber() != null) {
-                int stageNumber = request.getStageNumber();
-                if (stageNumber < 7) {
-                    predicates.add(criteriaBuilder.lessThan(root.get("stageNumber"),7));
-
-                } else if (stageNumber == 7) {
-                    predicates.add(criteriaBuilder.equal(root.get("stageNumber"), 7));
-                }
+                predicates.add(request.getStageNumber() < 7
+                        ? cb.lessThan(root.get("stageNumber"), 7)
+                        : cb.equal(root.get("stageNumber"), 7));
             }
 
-            return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+            query.distinct(true);
+
+            return predicates.isEmpty()
+                    ? cb.conjunction()
+                    : cb.and(predicates.toArray(new Predicate[0]));
         };
+    }
+
+    private static Optional<String> extractFirst(List<String> list) {
+        if (list == null || list.isEmpty()) return Optional.empty();
+        String value = list.get(0);
+        return (value != null && !value.trim().isEmpty())
+                ? Optional.of(value.trim().toLowerCase())
+                : Optional.empty();
+    }
+
+    private static boolean hasValue(String value) {
+        return value != null && !value.trim().isEmpty();
     }
 }

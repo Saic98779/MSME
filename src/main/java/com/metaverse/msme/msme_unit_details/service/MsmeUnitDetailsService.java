@@ -63,7 +63,10 @@ public class MsmeUnitDetailsService {
 
         Specification<MsmeUnitDetails> specification = MsmeUnitSpecification.searchByCriteria(safeRequest);
 
-        Pageable pageable = PageRequest.of(request.getPage(), request.getSize());
+        int page = request.getPage() != null ? request.getPage() : 0;
+        int size = request.getSize() != null ? request.getSize() : 50;
+
+        Pageable pageable = PageRequest.of(page, size);
 
         Page<MsmeUnitSummary> resultPage = unitDetailsRepository.findAllSummaries(specification, pageable);
 
