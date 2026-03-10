@@ -32,10 +32,10 @@ public class MsmeUnitDetails {
     @Column(name = "unit_address", length = 500, columnDefinition = "TEXT")
     private String unitAddress;
 
-    @Column(name = "door_no", columnDefinition = "TEXT")
+    @Column(name = "doorno", columnDefinition = "TEXT")
     private String doorNo;
 
-    @Column(name = "locality_street", columnDefinition = "TEXT")
+    @Column(name = "locality", columnDefinition = "TEXT")
     private String localityStreet;
 
     @Column(name = "extractedmandal", columnDefinition = "TEXT")
@@ -47,16 +47,16 @@ public class MsmeUnitDetails {
     @Column(name = "pincode", columnDefinition = "TEXT")
     private String pinCode;
 
-    @Column(name = "office_email", columnDefinition = "TEXT")
+    @Column(name = "officeemail", columnDefinition = "TEXT")
     private String officeEmail;
 
-    @Column(name = "office_contact", columnDefinition = "TEXT")
+    @Column(name = "officecontact", columnDefinition = "TEXT")
     private String officeContact;
 
-    @Column(name = "total_female_employees", columnDefinition = "TEXT")
+    @Column(name = "femaleempstotal", columnDefinition = "TEXT")
     private String totalFemaleEmployees;
 
-    @Column(name = "total_male_employees", columnDefinition = "TEXT")
+    @Column(name = "maleempstotal   ", columnDefinition = "TEXT")
     private String totalMaleEmployees;
 
     //-----------------Electricity-------------------stage4
@@ -64,36 +64,36 @@ public class MsmeUnitDetails {
     @Column(name = "type_of_connection", columnDefinition = "TEXT")
     private String typeOfConnection; //type of connection
 
-    @Column(name = "service_no", columnDefinition = "TEXT")
+    @Column(name = "serviceno", columnDefinition = "TEXT")
     private String serviceNo;
 
-    @Column(name = "current_status", columnDefinition = "TEXT")
+    @Column(name = "currentstatus", columnDefinition = "TEXT")
     private String currentStatus;
 
     //------------------Enterprenuner--------------stage2
 
-    @Column(name = "unit_holder_or_owner_name", columnDefinition = "TEXT")
+    @Column(name = "unitholderorownername", columnDefinition = "TEXT")
     private String unitHolderOrOwnerName;
 
     @Column(name = "caste", columnDefinition = "TEXT")
     private String caste;
 
-    @Column(name = "special_category", columnDefinition = "TEXT")
+    @Column(name = "specialcategory", columnDefinition = "TEXT")
     private String specialCategory;
 
     @Column(name = "gender", columnDefinition = "TEXT")
     private String gender;
 
-    @Column(name = "date_of_birth", columnDefinition = "TEXT")
+    @Column(name = "dateofbirth", columnDefinition = "TEXT")
     private String dateOfBirth;
 
     @Column(name = "qualification", columnDefinition = "TEXT")
     private String qualification;
 
-    @Column(name = "pan_no", columnDefinition = "TEXT")
+    @Column(name = "pan", columnDefinition = "TEXT")
     private String panNo;
 
-    @Column(name = "aadhar_no", columnDefinition = "TEXT")
+    @Column(name = "aadharno", columnDefinition = "TEXT")
     private String aadharNo;
 
     @Column(name = "mobile_no", columnDefinition = "TEXT")
@@ -105,23 +105,23 @@ public class MsmeUnitDetails {
     //------Communication  / Enterprenuer address--------------- stage3
 
 
-    @Column(name = "communication_Doorno", columnDefinition = "TEXT")
+    @Column(name = "commdoorno", columnDefinition = "TEXT")
     private String communicationDoorNo;
 
 
-    @Column(name = "communication_locality_street", columnDefinition = "TEXT")
+    @Column(name = "commlocality", columnDefinition = "TEXT")
     private String communicationLocalityStreet;
 
-    @Column(name = "communication_village", columnDefinition = "TEXT")
+    @Column(name = "commvillage", columnDefinition = "TEXT")
     private String communicationVillage;
 
-    @Column(name = "communication_mandal", columnDefinition = "TEXT")
+    @Column(name = "commmandal", columnDefinition = "TEXT")
     private String communicationMandal;
 
-    @Column(name = "communication_district", columnDefinition = "TEXT")
+    @Column(name = "commdistrict", columnDefinition = "TEXT")
     private String communicationDistrict;
 
-    @Column(name = "communication_pincode", columnDefinition = "TEXT")
+    @Column(name = "commpincode", columnDefinition = "TEXT")
     private String communicationPinCode;
 
     //--------------------Activity---------------------stage5
@@ -129,16 +129,16 @@ public class MsmeUnitDetails {
     @Column(name = "unit_name", columnDefinition = "TEXT")
     private String unitName;
 
-    @Column(name = "enterprise_type", columnDefinition = "TEXT")
+    @Column(name = "enterprisetype", columnDefinition = "TEXT")
     private String enterpriseType;
 
-    @Column(name = "msmes_sector", columnDefinition = "TEXT")
+    @Column(name = "msmesector", columnDefinition = "TEXT")
     private String msmeSector;
 
-    @Column(name = "organization_type", columnDefinition = "TEXT")
+    @Column(name = "orgntype", columnDefinition = "TEXT")
     private String organizationType;
 
-    @Column(name = "product_description", length = 500, columnDefinition = "TEXT")
+    @Column(name = "productdesc", length = 500, columnDefinition = "TEXT")
     private String productDescription;
 
     //-----------------Registration-----------------stage6
@@ -146,7 +146,7 @@ public class MsmeUnitDetails {
     @Column(name = "udyam_registration_date", columnDefinition = "TEXT")
     private String udyamRegistrationDate;//dateOfRegistration
 
-    @Column(name = "udyam_registration_no", columnDefinition = "TEXT")
+    @Column(name = "udyamregistrationno", columnDefinition = "TEXT")
     private String udyamRegistrationNo;
 
     @Column(name = "gstregno", columnDefinition = "TEXT")
@@ -162,10 +162,10 @@ public class MsmeUnitDetails {
     @Column(name = "ifsccode", columnDefinition = "TEXT")
     private String ifscCode;
 
-    @Column(name = "unit_cost_or_investment", columnDefinition = "TEXT")
+    @Column(name = "unitcostorinvestment", columnDefinition = "TEXT")
     private String unitCostOrInvestment;
 
-    @Column(name = "net_turnover_rupees", columnDefinition = "TEXT")
+    @Column(name = "netturnover_rupees", columnDefinition = "TEXT")
     private String netTurnoverRupees;
 
     //----------New fields to be captured----------------stage8
@@ -213,37 +213,37 @@ public class MsmeUnitDetails {
     @Column(name = "msme_state", columnDefinition = "TEXT")
     private String msmeState;
 
-    @Column(name = "msmes_dist", columnDefinition = "TEXT")
+    @Column(name = "msmedist", columnDefinition = "TEXT")
     private String msmeDist;
 
-    @Column(name = "principal_business_place", columnDefinition = "TEXT")
+    @Column(name = "principalbusinessplace", columnDefinition = "TEXT")
     private String principalBusinessPlace;
 
-    @Column(name = "institution_details", columnDefinition = "TEXT")
+    @Column(name = "institutiondetails", columnDefinition = "TEXT")
     private String institutionDetails;
 
     @Column(name = "purpose", columnDefinition = "TEXT")
     private String purpose;
 
-    @Column(name = "nature_of_business", columnDefinition = "TEXT")
+    @Column(name = "natureofbusiness", columnDefinition = "TEXT")
     private String natureOfBusiness;
 
-    @Column(name = "registration_under", columnDefinition = "TEXT")
+    @Column(name = "registrationunder", columnDefinition = "TEXT")
     private String registrationUnder;
 
-    @Column(name = "registration_no", columnDefinition = "TEXT")
+    @Column(name = "registrationno", columnDefinition = "TEXT")
     private String registrationNo;
 
-    @Column(name = "nic_code", columnDefinition = "TEXT")
+    @Column(name = "niccode", columnDefinition = "TEXT")
     private String nicCode;
 
-    @Column(name = "incorporation_date", columnDefinition = "TEXT")
+    @Column(name = "incorporationdate", columnDefinition = "TEXT")
     private String incorporationDate;
 
-    @Column(name = "commmence_date", columnDefinition = "TEXT")
+    @Column(name = "commmencedate", columnDefinition = "TEXT")
     private String commenceDate;
 
-    @Column(name = "udyam_aadhar_rgistration_no", columnDefinition = "TEXT")
+    @Column(name = "udyamaadharrgistrationno", columnDefinition = "TEXT")
     private String udyamAadharRegistrationNo;
 
     @Column(name = "din", columnDefinition = "TEXT")
@@ -252,7 +252,7 @@ public class MsmeUnitDetails {
     @Column(name = "photograph", columnDefinition = "TEXT")
     private String photograph;
 
-    @Column(name = "first_middle_last_Name", columnDefinition = "TEXT")
+    @Column(name = "firstmiddlelastname", columnDefinition = "TEXT")
     private String firstMiddleLastName;
 
     @Column(name = "designation", columnDefinition = "TEXT")
@@ -264,19 +264,19 @@ public class MsmeUnitDetails {
     @Column(name = "passport_no", columnDefinition = "TEXT")
     private String passportNo;
 
-    @Column(name = "comm_landmark", length = 500, columnDefinition = "TEXT")
+    @Column(name = "commlandmark", length = 500, columnDefinition = "TEXT")
     private String commLandmark;
 
-    @Column(name = "comm_name_of_the_building", columnDefinition = "TEXT")
+    @Column(name = "commnameofthebuilding", columnDefinition = "TEXT")
     private String commNameOfTheBuilding;
 
-    @Column(name = "floor_no", columnDefinition = "TEXT")
+    @Column(name = "floorno", columnDefinition = "TEXT")
     private String floorNo;
 
-    @Column(name = "type_of_loan", columnDefinition = "TEXT")
+    @Column(name = "typeofloan", columnDefinition = "TEXT")
     private String typeOfLoan;
 
-    @Column(name = "source_of_loan", columnDefinition = "TEXT")
+    @Column(name = "sourceofloan", columnDefinition = "TEXT")
     private String sourceOfLoan;
 
     @Column(name = "loan_applied_date", columnDefinition = "TEXT")
@@ -285,25 +285,25 @@ public class MsmeUnitDetails {
     @Column(name = "loan_sanction_date", columnDefinition = "TEXT")
     private String loanSanctionDate;
 
-    @Column(name = "subsidy_application_date", columnDefinition = "TEXT")
+    @Column(name = "subsidyapplicationdate", columnDefinition = "TEXT")
     private String subsidyApplicationDate;
 
-    @Column(name = "release_date_doc", columnDefinition = "TEXT")
+    @Column(name = "releasedate_doc", columnDefinition = "TEXT")
     private String releaseDateDoc;
 
-    @Column(name = "working_capital", columnDefinition = "TEXT")
+    @Column(name = "workingcapital", columnDefinition = "TEXT")
     private String workingCapital;
 
     @Column(name = "remarks", length = 500, columnDefinition = "TEXT")
     private String remarks;
 
-    @Column(name = "firm_reg_year", columnDefinition = "TEXT")
+    @Column(name = "firmregyear", columnDefinition = "TEXT")
     private String firmRegYear;
 
     @Column(name = "village_id", columnDefinition = "TEXT")
     private String villageid;
 
-    @Column(name = "comm_alternate_no", columnDefinition = "TEXT")
+    @Column(name = "commalternateno", columnDefinition = "TEXT")
     private String commAlternateNo;
 
     @Column(name = "load_kva", columnDefinition = "TEXT")
