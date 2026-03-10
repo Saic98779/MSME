@@ -126,7 +126,7 @@ public class MsmeUnitDetails {
 
     //--------------------Activity---------------------stage5
 
-    @Column(name = "unit_name", columnDefinition = "TEXT")
+    @Column(name = "unitname", columnDefinition = "TEXT")
     private String unitName;
 
     @Column(name = "enterprisetype", columnDefinition = "TEXT")
@@ -207,7 +207,7 @@ public class MsmeUnitDetails {
     @Column(name = "ward", columnDefinition = "TEXT")
     private String ward;
 
-    @Column(name = "department_name", columnDefinition = "TEXT")
+    @Column(name = "departmentname", columnDefinition = "TEXT")
     private String departmentName;
 
     @Column(name = "msme_state", columnDefinition = "TEXT")
