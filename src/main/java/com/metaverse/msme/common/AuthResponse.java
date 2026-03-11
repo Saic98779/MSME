@@ -1,5 +1,6 @@
 package com.metaverse.msme.common;
 
+import com.metaverse.msme.model.User;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
@@ -35,5 +36,16 @@ public class AuthResponse {
 
     @Schema(description = "Response message", example = "Login successful")
     private String message;
+
+    public static AuthResponse from(User user) {
+        return AuthResponse.builder()
+                .userId(user.getUserId())
+                .email(user.getEmail())
+                .username(user.getUsername())
+                .userRole(user.getUserRole())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .build();
+    }
 }
 

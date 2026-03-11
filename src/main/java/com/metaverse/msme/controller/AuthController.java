@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -42,6 +43,53 @@ public class AuthController {
 
     @Autowired
     private JwtTokenProvider jwtTokenProvider;
+
+    @GetMapping("/me")
+    @Operation(
+            summary = "Get current user profile",
+            description = "Return the authenticated user's profile derived from the JWT token."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "User details fetched",
+                    content = @Content(schema = @Schema(implementation = ApplicationAPIResponse.class))),
+            @ApiResponse(responseCode = "401", description = "Missing or invalid token",
+                    content = @Content(schema = @Schema(implementation = ApplicationAPIResponse.class))),
+            @ApiResponse(responseCode = "404", description = "User not found",
+                    content = @Content(schema = @Schema(implementation = ApplicationAPIResponse.class)))
+    })
+    @SecurityRequirement(name = "Bearer Authentication")
+    public ResponseEntity<ApplicationAPIResponse<AuthResponse>> getCurrentUser(HttpServletRequest request) {
+        String userId = (String) request.getAttribute("userId");
+
+        if (userId == null || userId.isBlank()) {
+            ApplicationAPIResponse<AuthResponse> response = ApplicationAPIResponse.<AuthResponse>builder()
+                    .success(false)
+                    .message("Unauthorized: missing or invalid token")
+                    .code(HttpStatus.UNAUTHORIZED.value())
+                    .build();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        }
+
+        return authService.getUserById(userId)
+                .map(user -> {
+                    AuthResponse userDetails = AuthResponse.from(user);
+                    ApplicationAPIResponse<AuthResponse> response = ApplicationAPIResponse.<AuthResponse>builder()
+                            .data(userDetails)
+                            .success(true)
+                            .message("User details fetched successfully")
+                            .code(HttpStatus.OK.value())
+                            .build();
+                    return ResponseEntity.ok(response);
+                })
+                .orElseGet(() -> {
+                    ApplicationAPIResponse<AuthResponse> response = ApplicationAPIResponse.<AuthResponse>builder()
+                            .success(false)
+                            .message("User not found")
+                            .code(HttpStatus.NOT_FOUND.value())
+                            .build();
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+                });
+    }
 
     @PostMapping("/register")
     @Operation(
