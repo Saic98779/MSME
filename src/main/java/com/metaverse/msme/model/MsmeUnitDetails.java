@@ -153,10 +153,10 @@ public class MsmeUnitDetails {
     private String gstRegNo;
 
     //-------------Financial--------------------------stage7
-    @Column(name = "bank_name", columnDefinition = "TEXT")
+    @Column(name = "bankname", columnDefinition = "TEXT")
     private String bankName;
 
-    @Column(name = "branch_address", length = 500, columnDefinition = "TEXT")
+    @Column(name = "branchaddress", length = 500, columnDefinition = "TEXT")
     private String branchAddress;
 
     @Column(name = "ifsccode", columnDefinition = "TEXT")
@@ -279,7 +279,7 @@ public class MsmeUnitDetails {
     @Column(name = "sourceofloan", columnDefinition = "TEXT")
     private String sourceOfLoan;
 
-    @Column(name = "loan_applied_date", columnDefinition = "TEXT")
+    @Column(name = "loanapplieddate", columnDefinition = "TEXT")
     private String loanAppliedDate;
 
     @Column(name = "loan_sanction_date", columnDefinition = "TEXT")
@@ -300,7 +300,7 @@ public class MsmeUnitDetails {
     @Column(name = "firmregyear", columnDefinition = "TEXT")
     private String firmRegYear;
 
-    @Column(name = "village_id", columnDefinition = "TEXT")
+    @Column(name = "villageid", columnDefinition = "TEXT")
     private String villageid;
 
     @Column(name = "commalternateno", columnDefinition = "TEXT")
