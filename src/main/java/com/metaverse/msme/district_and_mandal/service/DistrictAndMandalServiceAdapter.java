@@ -38,7 +38,7 @@ public class DistrictAndMandalServiceAdapter implements DistrictAndMandalService
     @Override
     public List<MandalResponse> getMandalsByDistrictName(String districtName) {
         // Get the district hierarchy
-        DistrictHierarchyEntity district = districtHierarchyRepository.findByDistrictName(districtName)
+        DistrictHierarchyEntity district = districtHierarchyRepository.findByDistrictNameIgnoreCase(districtName)
                 .orElseThrow(() -> new RuntimeException("District not found"));
 
         try {
