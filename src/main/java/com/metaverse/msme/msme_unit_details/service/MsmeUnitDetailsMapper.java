@@ -123,6 +123,7 @@ public class MsmeUnitDetailsMapper {
                 setIfNotNull(request.getIfscCode(), entity::setIfscCode);
                 setIfNotNull(request.getUnitCostOrInvestment(), entity::setUnitCostOrInvestment);
                 setIfNotNull(request.getNetTurnoverRupees(), entity::setNetTurnoverRupees);
+                setIfNotNull(request.getFileUrl(),entity::setFileUrl);
                 break;
 
             // ---------------- Stage -1 : Full Save ----------------
@@ -194,6 +195,7 @@ public class MsmeUnitDetailsMapper {
                 entity.setLatitude(request.getLatitude());
                 entity.setLongitude(request.getLongitude());
                 entity.setBankLoanRequired(request.getBankLoanRequired());
+                entity.setFileUrl(request.getFileUrl());
                 break;
 
             default:
@@ -307,7 +309,7 @@ public class MsmeUnitDetailsMapper {
                 .longitude(entity.getLongitude())
                 .bankLoanRequired(entity.getBankLoanRequired())
                 .interestedSchemes(entity.getInterestedSchemes())
-
+                .fileUrl(entity.getFileUrl())
                 .build();
     }
 }
