@@ -22,13 +22,13 @@ public class FileService {
         if (file == null || file.isEmpty()) {
             throw new IllegalArgumentException("Cannot upload empty file");
         }
-        return storeWithName(generateTargetName(file), file,msmeUnitId);
+        return storeWithName(generateTargetName(file), file, msmeUnitId);
     }
 
     public List<String> listFiles() {
         try {
             ensureUploadDir();
-            try (Stream<Path> stream = Files.list(UPLOAD_DIR)) {
+            try (Stream<Path> stream = Files.walk(UPLOAD_DIR)) {
                 return stream
                         .filter(Files::isRegularFile)
                         .map(path -> path.toAbsolutePath().toString())
@@ -45,12 +45,14 @@ public class FileService {
         try {
             ensureUploadDir();
 
-            Path oldFile = resolvePath(identifier);
+            Path oldFile = resolvePath(UPLOAD_DIR, identifier);
             Files.deleteIfExists(oldFile);
 
 
             String newFileName = file.getOriginalFilename();
-            Path newPath = UPLOAD_DIR.resolve(newFileName);
+            Path targetDir = oldFile.getParent() == null ? UPLOAD_DIR : oldFile.getParent();
+            ensureUploadDir(targetDir);
+            Path newPath = resolvePath(targetDir, newFileName);
 
             Files.copy(file.getInputStream(), newPath, StandardCopyOption.REPLACE_EXISTING);
 
@@ -64,18 +66,20 @@ public class FileService {
     public boolean deleteFile(String identifier) {
         try {
             ensureUploadDir();
-            Path target = resolvePath(identifier);
+            Path target = resolvePath(UPLOAD_DIR, identifier);
             return Files.deleteIfExists(target);
         } catch (IOException e) {
             throw new IllegalStateException("Failed to delete file", e);
         }
     }
 
-    private String storeWithName(String filename, MultipartFile file,String msmeUnitId) {
+    private String storeWithName(String filename, MultipartFile file, String msmeUnitId) {
         try {
-            ensureUploadDir(msmeUnitId);
-            Path target = resolvePath(filename);
-             boolean b = Files.deleteIfExists(target);// remove old file fully
+            Path tenantDir = msmeUploadDir(msmeUnitId);
+            ensureUploadDir(tenantDir);
+
+            Path target = resolvePath(tenantDir, filename);
+            Files.deleteIfExists(target); // remove old file fully
 
             Files.write(target, file.getBytes(), StandardOpenOption.CREATE_NEW);
             return target.toAbsolutePath().toString();
@@ -84,17 +88,23 @@ public class FileService {
         }
     }
 
-    private Path resolvePath(String identifier) {
+    private Path resolvePath(Path baseDir, String identifier) {
         String normalized = normalizeIdentifier(identifier);
-        Path candidate;
-        if (Paths.get(normalized).isAbsolute()) {
-            candidate = Paths.get(normalized).normalize();
-            return candidate;
+        Path candidate = Paths.get(normalized);
+
+        if (candidate.isAbsolute()) {
+            candidate = candidate.normalize();
         } else {
-            candidate = UPLOAD_DIR.resolve(normalized).normalize();
-            if (!candidate.startsWith(UPLOAD_DIR)) {
-                throw new IllegalArgumentException("Invalid file path");
+            String normalizedSlashes = normalized.replace('\\', '/');
+            String baseName = baseDir.getFileName().toString();
+            if (normalizedSlashes.startsWith(baseName + "/")) {
+                int cut = baseName.length() + 1;
+                candidate = Paths.get(normalized.substring(cut));
             }
+            candidate = baseDir.resolve(candidate).normalize();
+        }
+        if (!candidate.startsWith(baseDir)) {
+            throw new IllegalArgumentException("Invalid file path");
         }
         return candidate;
     }
@@ -103,8 +113,19 @@ public class FileService {
         Files.createDirectories(UPLOAD_DIR);
     }
 
-    private void ensureUploadDir(String msmeUnitId) throws IOException {
-        Files.createDirectories(Path.of(UPLOAD_DIR + "/" + msmeUnitId));
+    private void ensureUploadDir(Path dir) throws IOException {
+        Files.createDirectories(dir);
+    }
+
+    private Path msmeUploadDir(String msmeUnitId) {
+        if (!StringUtils.hasText(msmeUnitId)) {
+            throw new IllegalArgumentException("msmeUnitId is required");
+        }
+        String cleaned = StringUtils.cleanPath(msmeUnitId.trim());
+        if (cleaned.contains("..") || cleaned.contains("/") || cleaned.contains("\\")) {
+            throw new IllegalArgumentException("Invalid msmeUnitId");
+        }
+        return UPLOAD_DIR.resolve(cleaned);
     }
 
     private String normalizeIdentifier(String identifier) {
@@ -120,8 +141,7 @@ public class FileService {
                 if (!StringUtils.hasText(path)) {
                     throw new IllegalArgumentException("Invalid file identifier");
                 }
-                int slash = path.lastIndexOf('/');
-                id = slash >= 0 ? path.substring(slash + 1) : path;
+                id = path;
             } catch (IllegalArgumentException ex) {
                 throw new IllegalArgumentException("Invalid file identifier", ex);
             }

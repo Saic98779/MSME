@@ -1,7 +1,9 @@
 package com.metaverse.msme.files.controller;
 
+import com.metaverse.msme.common.ApplicationAPIResponse;
 import com.metaverse.msme.files.service.FileService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -23,24 +25,58 @@ public class FilesController {
     private final FileService fileService;
 
     @PostMapping(path = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public String uploadFile(@RequestParam("file") MultipartFile file,@RequestParam String msmeUnitId) {
-        return fileService.uploadFile(file, msmeUnitId);
+    public ResponseEntity<ApplicationAPIResponse<String>> uploadFile(@RequestParam("file") MultipartFile file, @RequestParam String msmeUnitId) {
+        String storedPath = fileService.uploadFile(file, msmeUnitId);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApplicationAPIResponse.<String>builder()
+                        .data(storedPath)
+                        .message("File uploaded successfully")
+                        .code(HttpStatus.CREATED.value())
+                        .success(true)
+                        .build());
     }
 
     @GetMapping
-    public List<String> listFiles() {
-        return fileService.listFiles();
+    public ResponseEntity<ApplicationAPIResponse<List<String>>> listFiles() {
+        List<String> files = fileService.listFiles();
+        return ResponseEntity.ok(ApplicationAPIResponse.<List<String>>builder()
+                .data(files)
+                .message("Files fetched")
+                .code(HttpStatus.OK.value())
+                .success(true)
+                .build());
     }
 
     @PutMapping(params = "path", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public String replaceFile(@RequestParam String path, @RequestParam("file") MultipartFile file) {
-        return fileService.replaceFile(path, file);
+    public ResponseEntity<ApplicationAPIResponse<String>> replaceFile(@RequestParam String path, @RequestParam("file") MultipartFile file) {
+        String newPath = fileService.replaceFile(path, file);
+        return ResponseEntity.ok(ApplicationAPIResponse.<String>builder()
+                .data(newPath)
+                .message("File replaced")
+                .code(HttpStatus.OK.value())
+                .success(true)
+                .build());
     }
 
     @DeleteMapping(params = "path")
-    public ResponseEntity<Void> deleteFile(@RequestParam String path) {
+    public ResponseEntity<ApplicationAPIResponse<Void>> deleteFile(@RequestParam String path) {
         boolean removed = fileService.deleteFile(path);
-        return removed ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
+        if (removed) {
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    ApplicationAPIResponse.<Void>builder()
+                            .message("File deleted")
+                            .code(HttpStatus.OK.value())
+                            .success(true)
+                            .build()
+            );
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                ApplicationAPIResponse.<Void>builder()
+                        .message("File not found")
+                        .code(HttpStatus.NOT_FOUND.value())
+                        .success(false)
+                        .build()
+        );
     }
 
 }
