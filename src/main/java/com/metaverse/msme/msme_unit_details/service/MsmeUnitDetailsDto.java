@@ -72,5 +72,6 @@ public class MsmeUnitDetailsDto {
     private String longitude;
     private Boolean bankLoanRequired;
     private List<String> interestedSchemes;
+    private String fileUrl;
 }
 

@@ -315,4 +315,6 @@ public class MsmeUnitDetails {
     @Column(name = "communicationaddress", length = 500, columnDefinition = "TEXT")
     private String communicationAddress;
 
+    private String fileUrl;
+
 }
