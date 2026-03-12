@@ -37,6 +37,8 @@ public class AuthResponse {
     @Schema(description = "Response message", example = "Login successful")
     private String message;
 
+    private String mobileNo;
+
     public static AuthResponse from(User user) {
         return AuthResponse.builder()
                 .userId(user.getUserId())
@@ -45,6 +47,7 @@ public class AuthResponse {
                 .userRole(user.getUserRole())
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
+                .mobileNo(user.getMobileNo())
                 .build();
     }
 }
