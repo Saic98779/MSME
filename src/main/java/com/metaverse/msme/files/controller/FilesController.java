@@ -47,16 +47,16 @@ public class FilesController {
                 .build());
     }
 
-    @PutMapping(params = "path", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<ApplicationAPIResponse<String>> replaceFile(@RequestParam String path, @RequestParam("file") MultipartFile file) {
-        String newPath = fileService.replaceFile(path, file);
-        return ResponseEntity.ok(ApplicationAPIResponse.<String>builder()
-                .data(newPath)
-                .message("File replaced")
-                .code(HttpStatus.OK.value())
-                .success(true)
-                .build());
-    }
+//    @PutMapping(params = "path", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+//    public ResponseEntity<ApplicationAPIResponse<String>> replaceFile(@RequestParam String path, @RequestParam("file") MultipartFile file) {
+//        String newPath = fileService.replaceFile(path, file);
+//        return ResponseEntity.ok(ApplicationAPIResponse.<String>builder()
+//                .data(newPath)
+//                .message("File replaced")
+//                .code(HttpStatus.OK.value())
+//                .success(true)
+//                .build());
+//    }
 
     @DeleteMapping(params = "path")
     public ResponseEntity<ApplicationAPIResponse<Void>> deleteFile(@RequestParam String path) {
