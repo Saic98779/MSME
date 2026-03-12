@@ -1,6 +1,7 @@
 package com.metaverse.msme.service;
 
 import com.metaverse.msme.common.AuthResponse;
+import com.metaverse.msme.common.ChangePasswordRequest;
 import com.metaverse.msme.common.LoginRequest;
 import com.metaverse.msme.common.RegisterRequest;
 import com.metaverse.msme.model.User;
@@ -23,6 +24,7 @@ public class AuthService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
 
     public AuthResponse register(RegisterRequest request) throws Exception {
         // Check if user already exists
@@ -130,6 +132,22 @@ public class AuthService {
 
     public void deleteUser(String userId) {
         userRepository.deleteById(userId);
+    }
+
+    public void changePassword(String userId, ChangePasswordRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+            throw new RuntimeException("Current password is incorrect");
+        }
+
+        if (request.getNewPassword() == null || request.getNewPassword().length() < 8) {
+            throw new RuntimeException("New password must be at least 8 characters");
+        }
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
     }
 }
 

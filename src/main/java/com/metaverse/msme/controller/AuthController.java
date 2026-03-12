@@ -1,9 +1,6 @@
 package com.metaverse.msme.controller;
 
-import com.metaverse.msme.common.ApplicationAPIResponse;
-import com.metaverse.msme.common.AuthResponse;
-import com.metaverse.msme.common.LoginRequest;
-import com.metaverse.msme.common.RegisterRequest;
+import com.metaverse.msme.common.*;
 import com.metaverse.msme.service.AuthService;
 import com.metaverse.msme.service.JwtTokenProvider;
 import io.swagger.v3.oas.annotations.Operation;
@@ -235,6 +232,65 @@ public class AuthController {
                     .code(401)
                     .build();
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        }
+    }
+
+    @PutMapping("/change-password")
+    @Operation(
+            summary = "Change user password",
+            description = "Change the authenticated user's password. Requires current password for verification."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Password changed successfully",
+                    content = @Content(schema = @Schema(implementation = ApplicationAPIResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid input or new password too weak",
+                    content = @Content(schema = @Schema(implementation = ApplicationAPIResponse.class))),
+            @ApiResponse(responseCode = "401", description = "Missing token or current password incorrect",
+                    content = @Content(schema = @Schema(implementation = ApplicationAPIResponse.class))),
+            @ApiResponse(responseCode = "404", description = "User not found",
+                    content = @Content(schema = @Schema(implementation = ApplicationAPIResponse.class)))
+    })
+    @SecurityRequirement(name = "Bearer Authentication")
+    public ResponseEntity<ApplicationAPIResponse<Void>> changePassword(
+            HttpServletRequest request,
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "Current and new password",
+                    required = true,
+                    content = @Content(schema = @Schema(implementation = ChangePasswordRequest.class))
+            )
+            @RequestBody ChangePasswordRequest changePasswordRequest) {
+
+        String userId = (String) request.getAttribute("userId");
+
+        if (userId == null || userId.isBlank()) {
+            ApplicationAPIResponse<Void> response = ApplicationAPIResponse.<Void>builder()
+                    .success(false)
+                    .message("Unauthorized: missing or invalid token")
+                    .code(HttpStatus.UNAUTHORIZED.value())
+                    .build();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        }
+
+        try {
+            authService.changePassword(userId, changePasswordRequest);
+            ApplicationAPIResponse<Void> response = ApplicationAPIResponse.<Void>builder()
+                    .success(true)
+                    .message("Password changed successfully")
+                    .code(HttpStatus.OK.value())
+                    .build();
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            boolean isNotFound = e.getMessage().contains("not found");
+            HttpStatus status = isNotFound ? HttpStatus.NOT_FOUND
+                    : e.getMessage().contains("incorrect") ? HttpStatus.UNAUTHORIZED
+                    : HttpStatus.BAD_REQUEST;
+
+            ApplicationAPIResponse<Void> response = ApplicationAPIResponse.<Void>builder()
+                    .success(false)
+                    .message(e.getMessage())
+                    .code(status.value())
+                    .build();
+            return ResponseEntity.status(status).body(response);
         }
     }
 }
