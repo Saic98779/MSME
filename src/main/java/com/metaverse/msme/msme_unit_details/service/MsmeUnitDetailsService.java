@@ -2,7 +2,7 @@ package com.metaverse.msme.msme_unit_details.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.metaverse.msme.model.MsmeUnitDetails;
-import com.metaverse.msme.model.MsmeUnitDetailsHistory;
+import com.metaverse.msme.model.stage.*;
 import com.metaverse.msme.repository.MsmeUnitDetailsRepository;
 import com.metaverse.msme.repository.MsmeUnitDetailsHistoryRepository;
 import lombok.RequiredArgsConstructor;
@@ -13,67 +13,83 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
 public class MsmeUnitDetailsService {
+
     private final MsmeUnitDetailsRepository unitDetailsRepository;
     private final MsmeUnitDetailsHistoryRepository historyRepository;
+    private final MsmeHistoryAsyncService historyAsyncService;
     private final ObjectMapper objectMapper;
 
     @Transactional
     public MsmeUnitDetailsDto updateMsmeUnitDetails(Long msmeUnitId, MsmeUnitDetailsDto request, String userId) {
         MsmeUnitDetails existing;
-        if (msmeUnitId == null) {
+        boolean isNew = msmeUnitId == null;
+
+        if (isNew) {
             existing = new MsmeUnitDetails();
-            // Set userId for new records
             existing.setUserId(userId);
         } else {
             existing = unitDetailsRepository.findById(msmeUnitId)
                     .orElseThrow(() -> new RuntimeException("MSME Unit Details not found with slno: " + msmeUnitId));
-            // Update userId for existing records if not already set
             if (existing.getUserId() == null) {
                 existing.setUserId(userId);
             }
         }
 
-        MsmeUnitDetailsMapper.mapUpdateMsmeUnitDetails(request, existing);
+        Integer stageNumber = request.getStageNumber();
 
+        Map<String, Object> oldStageData = isNew
+                ? Map.of()
+                : objectMapper.convertValue(buildStagePojo(existing, stageNumber), Map.class);
+
+        MsmeUnitDetailsMapper.mapUpdateMsmeUnitDetails(request, existing);
         MsmeUnitDetails saved = unitDetailsRepository.save(existing);
 
-        // Save to history table
-        saveToHistory(saved, userId);
+        Map<String, Object> newStageData = objectMapper.convertValue(
+                buildStagePojo(saved, stageNumber), Map.class);
+
+        Map<String, Object> changedFields = diffStageData(oldStageData, newStageData);
+
+        if (!changedFields.isEmpty()) {
+            historyAsyncService.saveHistory(
+                    saved.getMsmeUnitId(),
+                    userId,
+                    stageNumber,
+                    changedFields,
+                    resolveChangeDescription(stageNumber)
+            );
+        }
 
         return MsmeUnitDetailsMapper.toMsmeUnitDetailsDto(saved);
     }
 
     public MsmeUnitDetailsDto getMsmeUnitById(Long msmeUnitId) {
-
         MsmeUnitDetails existing = unitDetailsRepository.findById(msmeUnitId)
                 .orElseThrow(() -> new RuntimeException(
                         "MSME Unit Details not found with slno: " + msmeUnitId));
-
         return MsmeUnitDetailsMapper.toMsmeUnitDetailsDto(existing);
     }
 
     @Transactional(readOnly = true)
     public Page<MsmeUnitSearchResponse> searchMsmeUnits(MsmeUnitSearchRequest request) {
         MsmeUnitSearchRequest safeRequest = request != null ? request : new MsmeUnitSearchRequest();
-
         Specification<MsmeUnitDetails> specification = MsmeUnitSpecification.searchByCriteria(safeRequest);
 
         int page = request.getPage() != null ? request.getPage() : 0;
         int size = request.getSize() != null ? request.getSize() : 50;
 
         Pageable pageable = PageRequest.of(page, size);
-
         Page<MsmeUnitSummary> resultPage = unitDetailsRepository.findAllSummaries(specification, pageable);
 
         if (resultPage.isEmpty()) {
             return Page.empty(pageable);
         }
-
         return resultPage.map(this::mapToSearchResponse);
     }
 
@@ -91,20 +107,175 @@ public class MsmeUnitDetailsService {
                 .build();
     }
 
+    // ── Diff ─────────────────────────────────────────────────────────────────
 
-    private void saveToHistory(MsmeUnitDetails details, String updatedBy) {
-        com.fasterxml.jackson.databind.DeserializationFeature feature = com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES;
-        MsmeUnitDetailsHistory history = objectMapper.copy()
-                .disable(feature)
-                .convertValue(details, MsmeUnitDetailsHistory.class);
+    private Map<String, Object> diffStageData(Map<String, Object> oldData,
+                                              Map<String, Object> newData) {
+        Map<String, Object> diff = new LinkedHashMap<>();
 
-        history.setHistoryId(null);
+        for (Map.Entry<String, Object> entry : newData.entrySet()) {
+            String key    = entry.getKey();
+            Object newVal = entry.getValue();
+            Object oldVal = oldData.get(key);
+            if (!Objects.equals(oldVal, newVal)) {
+                diff.put(key, Map.of(
+                        "old", oldVal != null ? oldVal : "",
+                        "new", newVal != null ? newVal : ""));
+            }
+        }
 
-        history.setUpdatedBy(updatedBy);
-        history.setUpdatedAt(LocalDateTime.now());
-        history.setChangeDescription("MSME Unit Details Updated");
+        for (Map.Entry<String, Object> entry : oldData.entrySet()) {
+            String key = entry.getKey();
+            if (!newData.containsKey(key) && entry.getValue() != null) {
+                diff.put(key, Map.of("old", entry.getValue(), "new", ""));
+            }
+        }
 
-        historyRepository.save(history);
+        return diff;
     }
 
+    // ── Stage builder ─────────────────────────────────────────────────────────
+
+    private Object buildStagePojo(MsmeUnitDetails d, Integer stageNumber) {
+        if (stageNumber == null) {
+            throw new IllegalArgumentException("stageNumber must not be null");
+        }
+        return switch (stageNumber) {
+            case 1 -> {
+                Stage1UnitData s = new Stage1UnitData();
+                s.setUnitName(d.getUnitName());
+                s.setDistrict(d.getDistrict());
+                s.setUnitAddress(d.getUnitAddress());
+                s.setDoorNo(d.getDoorNo());
+                s.setLocalityStreet(d.getLocalityStreet());
+                s.setMandal(d.getMandal());
+                s.setVillage(d.getVillage());
+                s.setVillageId(d.getVillageid());
+                s.setPinCode(d.getPinCode());
+                s.setWard(d.getWard());
+                s.setOfficeEmail(d.getOfficeEmail());
+                s.setOfficeContact(d.getOfficeContact());
+                s.setTotalMaleEmployees(d.getTotalMaleEmployees());
+                s.setTotalFemaleEmployees(d.getTotalFemaleEmployees());
+                yield s;
+            }
+            case 2 -> {
+                Stage2EntrepreneurData s = new Stage2EntrepreneurData();
+                s.setUnitHolderOrOwnerName(d.getUnitHolderOrOwnerName());
+                s.setFirstMiddleLastName(d.getFirstMiddleLastName());
+                s.setGender(d.getGender());
+                s.setDateOfBirth(d.getDateOfBirth());
+                s.setCaste(d.getCaste());
+                s.setSpecialCategory(d.getSpecialCategory());
+                s.setQualification(d.getQualification());
+                s.setNationality(d.getNationality());
+                s.setMobileNo(d.getMobileNo());
+                s.setEmailAddress(d.getEmailAddress());
+                s.setPanNo(d.getPanNo());
+                s.setAadharNo(d.getAadharNo());
+                s.setDin(d.getDin());
+                s.setPassportNo(d.getPassportNo());
+                s.setDesignation(d.getDesignation());
+                s.setPhotograph(d.getPhotograph());
+                yield s;
+            }
+            case 3 -> {
+                Stage3CommunicationData s = new Stage3CommunicationData();
+                s.setCommunicationAddress(d.getCommunicationAddress());
+                s.setCommunicationDoorNo(d.getCommunicationDoorNo());
+                s.setCommunicationLocalityStreet(d.getCommunicationLocalityStreet());
+                s.setCommNameOfTheBuilding(d.getCommNameOfTheBuilding());
+                s.setFloorNo(d.getFloorNo());
+                s.setCommLandmark(d.getCommLandmark());
+                s.setCommunicationVillage(d.getCommunicationVillage());
+                s.setCommunicationMandal(d.getCommunicationMandal());
+                s.setCommunicationDistrict(d.getCommunicationDistrict());
+                s.setCommunicationPinCode(d.getCommunicationPinCode());
+                s.setCommAlternateNo(d.getCommAlternateNo());
+                yield s;
+            }
+            case 4 -> {
+                Stage4ElectricityData s = new Stage4ElectricityData();
+                s.setTypeOfConnection(d.getTypeOfConnection());
+                s.setServiceNo(d.getServiceNo());
+                s.setLoadKva(d.getLoadKva());
+                s.setCurrentStatus(d.getCurrentStatus());
+                yield s;
+            }
+            case 5 -> {
+                Stage5ActivityData s = new Stage5ActivityData();
+                s.setUnitName(d.getUnitName());
+                s.setEnterpriseType(d.getEnterpriseType());
+                s.setMsmeSector(d.getMsmeSector());
+                s.setOrganizationType(d.getOrganizationType());
+                s.setNatureOfBusiness(d.getNatureOfBusiness());
+                s.setNicCode(d.getNicCode());
+                s.setProductDescription(d.getProductDescription());
+                s.setPrincipalBusinessPlace(d.getPrincipalBusinessPlace());
+                s.setDepartmentName(d.getDepartmentName());
+                s.setMsmeState(d.getMsmeState());
+                s.setMsmeDist(d.getMsmeDist());
+                s.setIncorporationDate(d.getIncorporationDate());
+                s.setCommenceDate(d.getCommenceDate());
+                s.setFirmRegYear(d.getFirmRegYear());
+                s.setInstitutionDetails(d.getInstitutionDetails());
+                s.setCategory(d.getCategory());
+                yield s;
+            }
+            case 6 -> {
+                Stage6RegistrationData s = new Stage6RegistrationData();
+                s.setUdyamRegistrationNo(d.getUdyamRegistrationNo());
+                s.setUdyamRegistrationDate(d.getUdyamRegistrationDate());
+                s.setUdyamAadharRegistrationNo(d.getUdyamAadharRegistrationNo());
+                s.setGstRegNo(d.getGstRegNo());
+                s.setRegistrationUnder(d.getRegistrationUnder());
+                s.setRegistrationNo(d.getRegistrationNo());
+                s.setUniqueNo(d.getUniqueNo());
+                s.setPurpose(d.getPurpose());
+                yield s;
+            }
+            case 7 -> {
+                Stage7FinancialData s = new Stage7FinancialData();
+                s.setBankName(d.getBankName());
+                s.setBranchAddress(d.getBranchAddress());
+                s.setIfscCode(d.getIfscCode());
+                s.setUnitCostOrInvestment(d.getUnitCostOrInvestment());
+                s.setWorkingCapital(d.getWorkingCapital());
+                s.setNetTurnoverRupees(d.getNetTurnoverRupees());
+                yield s;
+            }
+            case 8 -> {
+                Stage8OperationalData s = new Stage8OperationalData();
+                s.setUnitExists(d.getUnitExists());
+                s.setUnitWorking(d.getUnitWorking());
+                s.setLatitude(d.getLatitude());
+                s.setLongitude(d.getLongitude());
+                s.setBankLoanAvailed(d.getBankLoanAvailed());
+                s.setBankLoanRequired(d.getBankLoanRequired());
+                s.setTypeOfLoan(d.getTypeOfLoan());
+                s.setSourceOfLoan(d.getSourceOfLoan());
+                s.setLoanAppliedDate(d.getLoanAppliedDate());
+                s.setLoanSanctionDate(d.getLoanSanctionDate());
+                s.setSubsidyApplicationDate(d.getSubsidyApplicationDate());
+                s.setReleaseDateDoc(d.getReleaseDateDoc());
+                s.setRemarks(d.getRemarks());
+                yield s;
+            }
+            default -> throw new IllegalArgumentException("Unknown stageNumber: " + stageNumber);
+        };
+    }
+
+    private String resolveChangeDescription(Integer stageNumber) {
+        return switch (stageNumber) {
+            case 1 -> "Stage 1: Unit/MSME address updated";
+            case 2 -> "Stage 2: Entrepreneur details updated";
+            case 3 -> "Stage 3: Communication address updated";
+            case 4 -> "Stage 4: Electricity details updated";
+            case 5 -> "Stage 5: Business activity details updated";
+            case 6 -> "Stage 6: Registration details updated";
+            case 7 -> "Stage 7: Financial/bank details updated";
+            case 8 -> "Stage 8: Operational & loan details updated";
+            default -> "Stage " + stageNumber + ": Details updated";
+        };
+    }
 }
