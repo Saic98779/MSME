@@ -37,10 +37,10 @@ public class MsmeUnitSpecification {
             }
 
             // Stage Number
-            if (request.getStageNumber() != null) {
-                predicates.add(request.getStageNumber() < 7
-                        ? cb.lessThan(root.get("stageNumber"), 7)
-                        : cb.equal(root.get("stageNumber"), 7));
+            if (request.getIsSurveyCompleted() != null) {
+                predicates.add(request.getIsSurveyCompleted()
+                        ? cb.isTrue(root.get("isSurveyCompleted"))
+                        : cb.isFalse(root.get("isSurveyCompleted")));
             }
 
             query.distinct(true);

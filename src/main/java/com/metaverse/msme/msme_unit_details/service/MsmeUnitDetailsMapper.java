@@ -124,6 +124,7 @@ public class MsmeUnitDetailsMapper {
                 setIfNotNull(request.getUnitCostOrInvestment(), entity::setUnitCostOrInvestment);
                 setIfNotNull(request.getNetTurnoverRupees(), entity::setNetTurnoverRupees);
                 setIfNotNull(request.getFileUrl(),entity::setFileUrl);
+                entity.setIsSurveyCompleted(true);
                 break;
 
             // ---------------- Stage -1 : Full Save ----------------
