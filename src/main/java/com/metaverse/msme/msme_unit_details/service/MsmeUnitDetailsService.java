@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -33,11 +34,13 @@ public class MsmeUnitDetailsService {
 
         if (isNew) {
             existing = new MsmeUnitDetails();
+            existing.setIsNewUnit(true);
             existing.setUserId(userId);
         } else {
             existing = unitDetailsRepository.findById(msmeUnitId)
-                    .orElseThrow(() -> new RuntimeException("MSME Unit Details not found with slno: " + msmeUnitId));
+                    .orElseThrow(() -> new RuntimeException("MSME Unit Details not found with msme_unit_id: " + msmeUnitId));
             if (existing.getUserId() == null) {
+                existing.setIsNewUnit(false);
                 existing.setUserId(userId);
             }
         }
@@ -277,5 +280,82 @@ public class MsmeUnitDetailsService {
             case 8 -> "Stage 8: Operational & loan details updated";
             default -> "Stage " + stageNumber + ": Details updated";
         };
+    }
+
+    public List<MsmeUnitSummaryResponse> summaryOfMsmeData(String district, String mandal){
+        String normalizedDistrict = normalizeFilter(district);
+        String normalizedMandal = normalizeFilter(mandal);
+
+        if (normalizedDistrict == null || normalizedMandal == null) {
+            throw new IllegalArgumentException("district and mandal are required");
+        }
+
+        List<MsmeUnitSummaryCounts> countsList = unitDetailsRepository.fetchVillageSummary(
+                normalizedDistrict,
+                normalizedMandal
+        );
+
+        return countsList.stream()
+                .map(counts -> {
+                    MsmeUnitSummaryResponse response = new MsmeUnitSummaryResponse();
+                    response.setDistrict(normalizedDistrict);
+                    response.setMandal(normalizedMandal);
+                    response.setVillage(counts.getExtractedvillage());
+                    response.setTarget(counts.getTarget());
+                    response.setCompletedMsmes(counts.getCompletedMsmes());
+                    response.setPendingMsmes(counts.getPendingMsmes());
+                    response.setNewMsmes(counts.getNewMsmes());
+                    response.setDuplicatedMsmes(counts.getDuplicatedMsmes());
+                    response.setYetToBegin(counts.getYetToBegin());
+                    return response;
+                })
+                .toList();
+    }
+
+
+
+
+    public MsmeUnitSummaryResponse summaryOfMsmeData(String district,String mandal,String village){
+        String normalizedDistrict = normalizeFilter(district);
+        String normalizedMandal = normalizeFilter(mandal);
+        String normalizedVillage = normalizeFilter(village);
+
+        if (normalizedDistrict == null) {
+            throw new IllegalArgumentException("district is required");
+        }
+
+        MsmeUnitSummaryCounts counts;
+        if (normalizedMandal == null) {
+            counts = unitDetailsRepository.fetchDistrictSummary(normalizedDistrict);
+        } else if (normalizedVillage == null) {
+            counts = unitDetailsRepository.fetchDistrictMandalSummary(normalizedDistrict, normalizedMandal);
+        } else {
+            counts = unitDetailsRepository.fetchDistrictMandalVillageSummary(
+                    normalizedDistrict,
+                    normalizedMandal,
+                    normalizedVillage
+            );
+        }
+
+        MsmeUnitSummaryResponse response = new MsmeUnitSummaryResponse();
+        response.setDistrict(normalizedDistrict);
+        response.setMandal(normalizedMandal);
+        response.setVillage(normalizedVillage);
+        response.setTarget(counts.getTarget());
+        response.setCompletedMsmes(counts.getCompletedMsmes());
+        response.setPendingMsmes(counts.getPendingMsmes());
+        response.setNewMsmes(counts.getNewMsmes());
+        response.setDuplicatedMsmes(counts.getDuplicatedMsmes());
+        response.setYetToBegin(counts.getYetToBegin());
+        return response;
+    }
+
+    private String normalizeFilter(String value) {
+        if (value == null) {
+            return null;
+        }
+
+        String trimmedValue = value.trim();
+        return trimmedValue.isEmpty() ? null : trimmedValue;
     }
 }
