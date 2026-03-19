@@ -6,6 +6,7 @@ import com.metaverse.msme.msme_unit_details.service.MsmeUnitDetailsService;
 import com.metaverse.msme.msme_unit_details.service.MsmeUnitSearchPageResponse;
 import com.metaverse.msme.msme_unit_details.service.MsmeUnitSearchRequest;
 import com.metaverse.msme.msme_unit_details.service.MsmeUnitSearchResponse;
+import com.metaverse.msme.msme_unit_details.service.MsmeUnitSummaryResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -20,6 +21,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/msme-unit")
@@ -113,6 +116,37 @@ public class MsmeUnitDetailsController {
                         .data(pageResponse)
                         .success(true)
                         .message(results.getTotalElements() + " units found")
+                        .code(200)
+                        .build();
+
+        return ResponseEntity.ok(response);
+    }
+
+
+    @GetMapping(path = "/msme-summary/{district}")
+    public ResponseEntity<?> summaryOfMsmeUnits(@PathVariable(required = true) String district,@RequestParam(required = false) String mandal,@RequestParam(required = false) String villages) {
+        MsmeUnitSummaryResponse summary = msmeUnitDetailsService.summaryOfMsmeData(district, mandal, villages);
+
+        ApplicationAPIResponse<MsmeUnitSummaryResponse> response =
+                ApplicationAPIResponse.<MsmeUnitSummaryResponse>builder()
+                        .data(summary)
+                        .success(true)
+                        .message("MSME unit summary retrieved successfully")
+                        .code(200)
+                        .build();
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping(path = "/villages-level/{district}")
+    public ResponseEntity<?> summaryOfVillagesMsmeUnits(@PathVariable String district,@RequestParam String mandal) {
+        List<MsmeUnitSummaryResponse> summary = msmeUnitDetailsService.summaryOfMsmeData(district, mandal);
+
+        ApplicationAPIResponse<List<MsmeUnitSummaryResponse>> response =
+                ApplicationAPIResponse.<List<MsmeUnitSummaryResponse>>builder()
+                        .data(summary)
+                        .success(true)
+                        .message("Village-level MSME unit summaries retrieved successfully")
                         .code(200)
                         .build();
 

@@ -317,4 +317,11 @@ public class MsmeUnitDetails {
 
     private String fileUrl;
 
+    private Boolean isCompleted; // monitoring for unit is completed or not
+
+    private Boolean isNewUnit;
+
+    private Boolean isDuplicate;
+
+
 }
