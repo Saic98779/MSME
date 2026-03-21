@@ -19,6 +19,17 @@ import java.util.List;
 public interface MsmeUnitDetailsRepository extends JpaRepository<MsmeUnitDetails, Long>, JpaSpecificationExecutor<MsmeUnitDetails> {
     List<MsmeUnitDetails> findByVillageIgnoreCaseAndMandalIgnoreCase(String village, String mandal);
 
+    @Query("""
+            SELECT u
+            FROM MsmeUnitDetails u
+            WHERE LOWER(TRIM(FUNCTION('regexp_replace', COALESCE(u.district, ''), '\\s*\\([^)]*\\)', '', 'g'))) =
+                  LOWER(TRIM(FUNCTION('regexp_replace', :district, '\\s*\\([^)]*\\)', '', 'g')))
+              AND (:mandal IS NULL OR LOWER(TRIM(FUNCTION('regexp_replace', COALESCE(u.mandal, ''), '\\s*\\([^)]*\\)', '', 'g'))) =
+                  LOWER(TRIM(FUNCTION('regexp_replace', :mandal, '\\s*\\([^)]*\\)', '', 'g'))))
+              AND (:village IS NULL OR LOWER(COALESCE(u.village, '')) = LOWER(:village))
+            """)
+    List<MsmeUnitDetails> findDuplicateCandidates(@Param("district") String district, @Param("mandal") String mandal, @Param("village") String village);
+
     @Query(value = """
             SELECT
                 COUNT(*) AS target,
@@ -44,8 +55,7 @@ public interface MsmeUnitDetailsRepository extends JpaRepository<MsmeUnitDetails
             WHERE LOWER(CAST(extracteddistrict AS TEXT)) = LOWER(:district)
               AND LOWER(CAST(extractedmandal AS TEXT)) = LOWER(:mandal)
             """, nativeQuery = true)
-    MsmeUnitSummaryCounts fetchDistrictMandalSummary(@Param("district") String district,
-                                                     @Param("mandal") String mandal);
+    MsmeUnitSummaryCounts fetchDistrictMandalSummary(@Param("district") String district, @Param("mandal") String mandal);
 
     @Query(value = """
             SELECT
