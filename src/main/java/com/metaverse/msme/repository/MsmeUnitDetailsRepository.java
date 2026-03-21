@@ -1,6 +1,7 @@
 package com.metaverse.msme.repository;
 
 import com.metaverse.msme.model.MsmeUnitDetails;
+import com.metaverse.msme.msme_unit_details.service.MsmeDuplicateCriteriaCheck;
 import com.metaverse.msme.msme_unit_details.service.MsmeUnitSummary;
 import com.metaverse.msme.msme_unit_details.service.MsmeUnitSummaryCounts;
 import com.metaverse.msme.msme_unit_details.service.MsmeUnitSummaryResponse;
@@ -19,16 +20,50 @@ import java.util.List;
 public interface MsmeUnitDetailsRepository extends JpaRepository<MsmeUnitDetails, Long>, JpaSpecificationExecutor<MsmeUnitDetails> {
     List<MsmeUnitDetails> findByVillageIgnoreCaseAndMandalIgnoreCase(String village, String mandal);
 
-    @Query("""
-            SELECT u
-            FROM MsmeUnitDetails u
-            WHERE LOWER(TRIM(FUNCTION('regexp_replace', COALESCE(u.district, ''), '\\s*\\([^)]*\\)', '', 'g'))) =
-                  LOWER(TRIM(FUNCTION('regexp_replace', :district, '\\s*\\([^)]*\\)', '', 'g')))
-              AND (:mandal IS NULL OR LOWER(TRIM(FUNCTION('regexp_replace', COALESCE(u.mandal, ''), '\\s*\\([^)]*\\)', '', 'g'))) =
-                  LOWER(TRIM(FUNCTION('regexp_replace', :mandal, '\\s*\\([^)]*\\)', '', 'g'))))
-              AND (:village IS NULL OR LOWER(COALESCE(u.village, '')) = LOWER(:village))
-            """)
-    List<MsmeUnitDetails> findDuplicateCandidates(@Param("district") String district, @Param("mandal") String mandal, @Param("village") String village);
+    @Query(value = """
+            SELECT
+                CAST(msme_unit_id AS INTEGER) AS msmeUnitId,
+                unitname AS unitName,
+                unitholderorownername AS ownerName,
+                extracteddistrict AS extractedistrict,
+                extractedmandal AS extractemandal,
+                extractedvillage AS extractevillage
+            FROM msme_unit_details
+            WHERE LOWER(TRIM(BOTH FROM regexp_replace(COALESCE(CAST(extracteddistrict AS TEXT), ''), '\\s*\\([^)]*\\)', '', 'g'))) =
+                  :normalizedDistrict
+              AND (
+                    similarity(LOWER(COALESCE(CAST(unitname AS TEXT), '')), :normalizedUnitName) >= 0.20
+                 OR similarity(LOWER(COALESCE(CAST(unitholderorownername AS TEXT), '')), :normalizedOwnerName) >= 0.20
+                 OR (:normalizedMandal IS NOT NULL AND similarity(LOWER(COALESCE(CAST(extractedmandal AS TEXT), '')), :normalizedMandal) >= 0.20)
+                 OR (:normalizedVillage IS NOT NULL AND similarity(LOWER(COALESCE(CAST(extractedvillage AS TEXT), '')), :normalizedVillage) >= 0.20)
+              )
+            ORDER BY GREATEST(
+                    similarity(LOWER(COALESCE(CAST(unitname AS TEXT), '')), :normalizedUnitName),
+                    similarity(LOWER(COALESCE(CAST(unitholderorownername AS TEXT), '')), :normalizedOwnerName),
+                    CASE WHEN :normalizedMandal IS NULL THEN 0 ELSE similarity(LOWER(COALESCE(CAST(extractedmandal AS TEXT), '')), :normalizedMandal) END,
+                    CASE WHEN :normalizedVillage IS NULL THEN 0 ELSE similarity(LOWER(COALESCE(CAST(extractedvillage AS TEXT), '')), :normalizedVillage) END
+            ) DESC
+            LIMIT 250
+            """, nativeQuery = true)
+    List<MsmeDuplicateCriteriaCheck> findDuplicateCandidates(@Param("normalizedDistrict") String normalizedDistrict,
+                                                             @Param("normalizedUnitName") String normalizedUnitName,
+                                                             @Param("normalizedOwnerName") String normalizedOwnerName,
+                                                             @Param("normalizedMandal") String normalizedMandal,
+                                                             @Param("normalizedVillage") String normalizedVillage);
+
+    @Query(value = """
+            SELECT
+                CAST(msme_unit_id AS INTEGER) AS msmeUnitId,
+                unitname AS unitName,
+                unitholderorownername AS ownerName,
+                extracteddistrict AS extractedistrict,
+                extractedmandal AS extractemandal,
+                extractedvillage AS extractevillage
+            FROM msme_unit_details
+            WHERE LOWER(TRIM(BOTH FROM regexp_replace(COALESCE(CAST(extracteddistrict AS TEXT), ''), '\\s*\\([^)]*\\)', '', 'g'))) =
+                  :normalizedDistrict
+            """, nativeQuery = true)
+    List<MsmeDuplicateCriteriaCheck> findDuplicateCandidatesByDistrict(@Param("normalizedDistrict") String normalizedDistrict);
 
     @Query(value = """
             SELECT

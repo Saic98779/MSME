@@ -2,6 +2,7 @@ package com.metaverse.msme.msme_unit_details.controller;
 
 import com.metaverse.msme.common.ApplicationAPIResponse;
 import com.metaverse.msme.msme_unit_details.service.DuplicateProbability;
+import com.metaverse.msme.msme_unit_details.service.DuplicateProbabilityRequest;
 import com.metaverse.msme.msme_unit_details.service.MsmeUnitDetailsDto;
 import com.metaverse.msme.msme_unit_details.service.MsmeUnitDetailsService;
 import com.metaverse.msme.msme_unit_details.service.MsmeUnitSearchPageResponse;
@@ -154,9 +155,10 @@ public class MsmeUnitDetailsController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping(path = "/duplicate-probability")
-    public ResponseEntity<?> duplicateProbability(@RequestParam String unitName,@RequestParam String ownerName,@RequestParam String district,@RequestParam(required = false) String mandal,@RequestParam(required = false) String villages) {
-        List<DuplicateProbability> probabilities = msmeUnitDetailsService.duplicateProbabilityCheck(unitName, ownerName, district, mandal, villages);
+    @PostMapping(path = "/duplicate-probability")
+    public ResponseEntity<?> duplicateProbability(@RequestBody DuplicateProbabilityRequest request) {
+        List<DuplicateProbability> probabilities = msmeUnitDetailsService.duplicateProbabilityCheck(
+                request.getUnitName(), request.getOwnerName(), request.getDistrict(), request.getMandal(), request.getVillages());
 
         ApplicationAPIResponse<List<DuplicateProbability>> response =
                 ApplicationAPIResponse.<List<DuplicateProbability>>builder()
