@@ -125,7 +125,7 @@ public class MsmeUnitDetailsController {
     }
 
 
-    @GetMapping(path = "/msme-summary/{district}")
+    @GetMapping(path = "/dashboard/{district}")
     public ResponseEntity<?> summaryOfMsmeUnits(@PathVariable(required = true) String district,@RequestParam(required = false) String mandal,@RequestParam(required = false) String villages) {
         MsmeUnitSummaryResponse summary = msmeUnitDetailsService.summaryOfMsmeData(district, mandal, villages);
 
@@ -140,7 +140,7 @@ public class MsmeUnitDetailsController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping(path = "/villages-level/{district}")
+    @GetMapping(path = "/villages-progress/{district}")
     public ResponseEntity<?> summaryOfVillagesMsmeUnits(@PathVariable String district,@RequestParam String mandal) {
         List<MsmeUnitSummaryResponse> summary = msmeUnitDetailsService.summaryOfMsmeData(district, mandal);
 
@@ -148,7 +148,7 @@ public class MsmeUnitDetailsController {
                 ApplicationAPIResponse.<List<MsmeUnitSummaryResponse>>builder()
                         .data(summary)
                         .success(true)
-                        .message("Village-level MSME unit summaries retrieved successfully")
+                        .message("Village-progress MSME unit summaries retrieved successfully")
                         .code(200)
                         .build();
 
