@@ -6,7 +6,18 @@ import lombok.*;
 import java.util.List;
 
 @Entity
-@Table(name = "msme_unit_details")
+@Table(
+        name = "msme_unit_details",
+        indexes = {
+
+                @Index(name = "idx_msme_district_mandal_village", columnList = "extracteddistrict, extractedmandal, extractedvillage"),
+                @Index(name = "idx_msme_unitname",columnList = "unitname"),
+                @Index(name = "idx_msme_ownername", columnList = "unitholderorownername"),
+                @Index(name = "idx_msme_district",            columnList = "extracteddistrict"),
+                @Index(name = "idx_msme_mandal",              columnList = "extractedmandal"),
+                @Index(name = "idx_msme_village",             columnList = "extractedvillage")
+        }
+)
 @AllArgsConstructor
 @NoArgsConstructor
 @Setter
@@ -316,5 +327,12 @@ public class MsmeUnitDetails {
     private String communicationAddress;
 
     private String fileUrl;
+
+    private Boolean isCompleted; // monitoring for unit is completed or not
+
+    private Boolean isNewUnit;
+
+    private Boolean isDuplicate;
+
 
 }

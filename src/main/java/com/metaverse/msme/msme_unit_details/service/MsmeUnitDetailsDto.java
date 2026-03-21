@@ -73,5 +73,9 @@ public class MsmeUnitDetailsDto {
     private Boolean bankLoanRequired;
     private List<String> interestedSchemes;
     private String fileUrl;
+
+    private Boolean isCompleted;
+    private Boolean isNewUnit;
+    private Boolean isDuplicate;
 }
 

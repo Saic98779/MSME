@@ -1,11 +1,14 @@
 package com.metaverse.msme.msme_unit_details.controller;
 
 import com.metaverse.msme.common.ApplicationAPIResponse;
+import com.metaverse.msme.msme_unit_details.service.DuplicateProbability;
+import com.metaverse.msme.msme_unit_details.service.DuplicateProbabilityRequest;
 import com.metaverse.msme.msme_unit_details.service.MsmeUnitDetailsDto;
 import com.metaverse.msme.msme_unit_details.service.MsmeUnitDetailsService;
 import com.metaverse.msme.msme_unit_details.service.MsmeUnitSearchPageResponse;
 import com.metaverse.msme.msme_unit_details.service.MsmeUnitSearchRequest;
 import com.metaverse.msme.msme_unit_details.service.MsmeUnitSearchResponse;
+import com.metaverse.msme.msme_unit_details.service.MsmeUnitSummaryResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -20,6 +23,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/msme-unit")
@@ -113,6 +118,53 @@ public class MsmeUnitDetailsController {
                         .data(pageResponse)
                         .success(true)
                         .message(results.getTotalElements() + " units found")
+                        .code(200)
+                        .build();
+
+        return ResponseEntity.ok(response);
+    }
+
+
+    @GetMapping(path = "/dashboard/{district}")
+    public ResponseEntity<?> summaryOfMsmeUnits(@PathVariable(required = true) String district,@RequestParam(required = false) String mandal,@RequestParam(required = false) String villages) {
+        MsmeUnitSummaryResponse summary = msmeUnitDetailsService.summaryOfMsmeData(district, mandal, villages);
+
+        ApplicationAPIResponse<MsmeUnitSummaryResponse> response =
+                ApplicationAPIResponse.<MsmeUnitSummaryResponse>builder()
+                        .data(summary)
+                        .success(true)
+                        .message("MSME unit summary retrieved successfully")
+                        .code(200)
+                        .build();
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping(path = "/villages-progress/{district}")
+    public ResponseEntity<?> summaryOfVillagesMsmeUnits(@PathVariable String district,@RequestParam String mandal) {
+        List<MsmeUnitSummaryResponse> summary = msmeUnitDetailsService.summaryOfMsmeData(district, mandal);
+
+        ApplicationAPIResponse<List<MsmeUnitSummaryResponse>> response =
+                ApplicationAPIResponse.<List<MsmeUnitSummaryResponse>>builder()
+                        .data(summary)
+                        .success(true)
+                        .message("Village-progress MSME unit summaries retrieved successfully")
+                        .code(200)
+                        .build();
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping(path = "/duplicate-probability")
+    public ResponseEntity<?> duplicateProbability(@RequestBody DuplicateProbabilityRequest request) {
+        List<DuplicateProbability> probabilities = msmeUnitDetailsService.duplicateProbabilityCheck(
+                request.getUnitName(), request.getOwnerName(), request.getDistrict(), request.getMandal(), request.getVillages());
+
+        ApplicationAPIResponse<List<DuplicateProbability>> response =
+                ApplicationAPIResponse.<List<DuplicateProbability>>builder()
+                        .data(probabilities)
+                        .success(true)
+                        .message("Duplicate probability evaluated successfully")
                         .code(200)
                         .build();
 

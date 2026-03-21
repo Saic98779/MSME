@@ -41,6 +41,7 @@ public class MsmeUnitDetailsMapper {
                 setIfNotNull(request.getOfficeContact(), entity::setOfficeContact);
                 setIfNotNull(request.getTotalFemaleEmployees(), entity::setTotalFemaleEmployees);
                 setIfNotNull(request.getTotalMaleEmployees(), entity::setTotalMaleEmployees);
+                setIfNotNull(false,entity::setIsCompleted);
                 break;
 
             // ---------------- Stage 8 : Loan & Geo ----------------
@@ -124,6 +125,7 @@ public class MsmeUnitDetailsMapper {
                 setIfNotNull(request.getUnitCostOrInvestment(), entity::setUnitCostOrInvestment);
                 setIfNotNull(request.getNetTurnoverRupees(), entity::setNetTurnoverRupees);
                 setIfNotNull(request.getFileUrl(),entity::setFileUrl);
+                setIfNotNull(true,entity::setIsCompleted);
                 break;
 
             // ---------------- Stage -1 : Full Save ----------------
@@ -310,6 +312,9 @@ public class MsmeUnitDetailsMapper {
                 .bankLoanRequired(entity.getBankLoanRequired())
                 .interestedSchemes(entity.getInterestedSchemes())
                 .fileUrl(entity.getFileUrl())
+                .isNewUnit(entity.getIsNewUnit())
+                .isCompleted(entity.getIsCompleted())
+                .isDuplicate(entity.getIsDuplicate())
                 .build();
     }
 }
