@@ -79,6 +79,11 @@ public class SecurityCross {
                                 "/msme/api/auth/validate-token"
                         ).permitAll()
 
+                        .requestMatchers(
+                                "/api/msme-unit/duplicate-probability",
+                                "/msme/api/msme-unit/duplicate-probability"
+                        ).permitAll()
+
                         // Allow file APIs
                         .requestMatchers(
                                 "/files/**",

@@ -13,10 +13,15 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.Normalizer;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -357,5 +362,248 @@ public class MsmeUnitDetailsService {
 
         String trimmedValue = value.trim();
         return trimmedValue.isEmpty() ? null : trimmedValue;
+    }
+
+    @Transactional(readOnly = true)
+    public List<DuplicateProbability> duplicateProbabilityCheck(String unitName, String ownerName, String district, String mandal, String villages) {
+        String normalizedUnitName = requireFilter(unitName, "unitName");
+        String normalizedOwnerName = requireFilter(ownerName, "ownerName");
+        String normalizedDistrict = requireFilter(district, "district");
+        String normalizedMandal = normalizeFilter(mandal);
+        String normalizedVillage = normalizeFilter(villages);
+
+        List<MsmeUnitDetails> candidates = unitDetailsRepository.findDuplicateCandidates(
+                normalizedDistrict, normalizedMandal, normalizedVillage);
+
+        List<DuplicateProbability> response = new ArrayList<>();
+        Set<Long> assignedIds = new HashSet<>();
+
+        for (MsmeUnitDetails candidate : candidates) {
+            if (isExactFiveFieldMatch(candidate, normalizedUnitName, normalizedOwnerName, normalizedDistrict, normalizedMandal, normalizedVillage)) {
+                response.add(buildProbability(candidate, 100.0f));
+                assignedIds.add(candidate.getMsmeUnitId());
+            }
+        }
+
+        for (MsmeUnitDetails candidate : candidates) {
+            if (isAssigned(candidate, assignedIds)) {
+                continue;
+            }
+            if (isFiveFieldSimilarityMatch(candidate, normalizedUnitName, normalizedOwnerName, normalizedDistrict, normalizedMandal, normalizedVillage)) {
+                response.add(buildProbability(candidate, calculateFiveFieldMatchPercentage(
+                        candidate,
+                        normalizedUnitName,
+                        normalizedOwnerName,
+                        normalizedDistrict,
+                        normalizedMandal,
+                        normalizedVillage
+                )));
+                assignedIds.add(candidate.getMsmeUnitId());
+            }
+        }
+
+        for (MsmeUnitDetails candidate : candidates) {
+            if (isAssigned(candidate, assignedIds)) {
+                continue;
+            }
+            if (isThreeFieldSimilarityMatch(candidate, normalizedUnitName, normalizedOwnerName, normalizedDistrict)) {
+                response.add(buildProbability(candidate, calculateThreeFieldMatchPercentage(
+                        candidate,
+                        normalizedUnitName,
+                        normalizedOwnerName,
+                        normalizedDistrict
+                )));
+                assignedIds.add(candidate.getMsmeUnitId());
+            }
+        }
+
+        response.sort(Comparator.comparing(DuplicateProbability::getProbabilityPercentage).reversed());
+        return response.size() > 1 ? response : List.of();
+    }
+
+    private DuplicateProbability buildProbability(MsmeUnitDetails candidate, float probability) {
+        return DuplicateProbability.builder()
+                .probabilityPercentage(probability)
+                .unitDetails(List.of(candidate))
+                .build();
+    }
+
+    private float calculateFiveFieldMatchPercentage(MsmeUnitDetails candidate,
+                                                    String unitName,
+                                                    String ownerName,
+                                                    String district,
+                                                    String mandal,
+                                                    String village) {
+        double total = similarityScore(candidate.getUnitName(), unitName)
+                + similarityScore(candidate.getUnitHolderOrOwnerName(), ownerName)
+                + locationSimilarityScore(candidate.getDistrict(), district)
+                + locationSimilarityScore(candidate.getMandal(), mandal)
+                + similarityScore(candidate.getVillage(), village);
+        return roundPercentage((total / 5.0d) * 100.0d);
+    }
+
+    private float calculateThreeFieldMatchPercentage(MsmeUnitDetails candidate,
+                                                     String unitName,
+                                                     String ownerName,
+                                                     String district) {
+        double total = similarityScore(candidate.getUnitName(), unitName)
+                + similarityScore(candidate.getUnitHolderOrOwnerName(), ownerName)
+                + locationSimilarityScore(candidate.getDistrict(), district);
+        return roundPercentage((total / 3.0d) * 100.0d);
+    }
+
+    private boolean isAssigned(MsmeUnitDetails candidate, Set<Long> assignedIds) {
+        return candidate.getMsmeUnitId() != null && assignedIds.contains(candidate.getMsmeUnitId());
+    }
+
+    private boolean isExactFiveFieldMatch(MsmeUnitDetails candidate, String unitName, String ownerName, String district, String mandal, String village) {
+        if (mandal == null || village == null) {
+            return false;
+        }
+
+        return normalizedEquals(candidate.getUnitName(), unitName) && normalizedEquals(candidate.getUnitHolderOrOwnerName(), ownerName)
+                && normalizedLocationEquals(candidate.getDistrict(), district) && normalizedLocationEquals(candidate.getMandal(), mandal)
+                && normalizedEquals(candidate.getVillage(), village);
+    }
+
+    private boolean isFiveFieldSimilarityMatch(MsmeUnitDetails candidate,
+                                               String unitName,
+                                               String ownerName,
+                                               String district,
+                                               String mandal,
+                                               String village) {
+        if (mandal == null || village == null) {
+            return false;
+        }
+
+        return isSimilar(candidate.getUnitName(), unitName, 0.80d)
+                && isSimilar(candidate.getUnitHolderOrOwnerName(), ownerName, 0.80d)
+                && isLocationSimilar(candidate.getDistrict(), district, 0.90d)
+                && isLocationSimilar(candidate.getMandal(), mandal, 0.85d)
+                && isSimilar(candidate.getVillage(), village, 0.85d);
+    }
+
+    private boolean isThreeFieldSimilarityMatch(MsmeUnitDetails candidate,
+                                                String unitName,
+                                                String ownerName,
+                                                String district) {
+        return isSimilar(candidate.getUnitName(), unitName, 0.80d)
+                && isSimilar(candidate.getUnitHolderOrOwnerName(), ownerName, 0.80d)
+                && isLocationSimilar(candidate.getDistrict(), district, 0.90d);
+    }
+
+    private boolean normalizedEquals(String left, String right) {
+        return Objects.equals(normalizeText(left), normalizeText(right));
+    }
+
+    private boolean normalizedLocationEquals(String left, String right) {
+        return Objects.equals(normalizeLocationText(left), normalizeLocationText(right));
+    }
+
+    private boolean isSimilar(String left, String right, double threshold) {
+        return similarityScore(left, right) >= threshold;
+    }
+
+    private boolean isLocationSimilar(String left, String right, double threshold) {
+        return locationSimilarityScore(left, right) >= threshold;
+    }
+
+    private double similarityScore(String left, String right) {
+        String normalizedLeft = normalizeText(left);
+        String normalizedRight = normalizeText(right);
+
+        if (normalizedLeft == null || normalizedRight == null) {
+            return 0.0d;
+        }
+
+        return similarity(normalizedLeft, normalizedRight);
+    }
+
+    private double locationSimilarityScore(String left, String right) {
+        String normalizedLeft = normalizeLocationText(left);
+        String normalizedRight = normalizeLocationText(right);
+
+        if (normalizedLeft == null || normalizedRight == null) {
+            return 0.0d;
+        }
+
+        return similarity(normalizedLeft, normalizedRight);
+    }
+
+    private double similarity(String left, String right) {
+        if (left.equals(right)) {
+            return 1.0d;
+        }
+
+        int maxLength = Math.max(left.length(), right.length());
+        if (maxLength == 0) {
+            return 1.0d;
+        }
+
+        int distance = levenshteinDistance(left, right);
+        return 1.0d - ((double) distance / maxLength);
+    }
+
+    private int levenshteinDistance(String left, String right) {
+        int[] previous = new int[right.length() + 1];
+        int[] current = new int[right.length() + 1];
+
+        for (int j = 0; j <= right.length(); j++) {
+            previous[j] = j;
+        }
+
+        for (int i = 1; i <= left.length(); i++) {
+            current[0] = i;
+            for (int j = 1; j <= right.length(); j++) {
+                int substitutionCost = left.charAt(i - 1) == right.charAt(j - 1) ? 0 : 1;
+                current[j] = Math.min(
+                        Math.min(current[j - 1] + 1, previous[j] + 1),
+                        previous[j - 1] + substitutionCost
+                );
+            }
+
+            int[] temp = previous;
+            previous = current;
+            current = temp;
+        }
+
+        return previous[right.length()];
+    }
+
+    private float roundPercentage(double percentage) {
+        return (float) (Math.round(percentage * 100.0d) / 100.0d);
+    }
+
+    private String requireFilter(String value, String fieldName) {
+        String normalized = normalizeFilter(value);
+        if (normalized == null) {
+            throw new IllegalArgumentException(fieldName + " is required");
+        }
+        return normalized;
+    }
+
+    private String normalizeText(String value) {
+        String normalized = normalizeFilter(value);
+        if (normalized == null) {
+            return null;
+        }
+
+        String ascii = Normalizer.normalize(normalized, Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "");
+
+        return ascii.toLowerCase()
+                .replaceAll("[^a-z0-9\\s]", " ")
+                .replaceAll("\\s+", " ")
+                .trim();
+    }
+
+    private String normalizeLocationText(String value) {
+        String normalized = normalizeFilter(value);
+        if (normalized == null) {
+            return null;
+        }
+
+        String withoutParentheses = normalized.replaceAll("\\s*\\([^)]*\\)", " ");
+        return normalizeText(withoutParentheses);
     }
 }

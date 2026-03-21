@@ -1,6 +1,7 @@
 package com.metaverse.msme.msme_unit_details.controller;
 
 import com.metaverse.msme.common.ApplicationAPIResponse;
+import com.metaverse.msme.msme_unit_details.service.DuplicateProbability;
 import com.metaverse.msme.msme_unit_details.service.MsmeUnitDetailsDto;
 import com.metaverse.msme.msme_unit_details.service.MsmeUnitDetailsService;
 import com.metaverse.msme.msme_unit_details.service.MsmeUnitSearchPageResponse;
@@ -147,6 +148,21 @@ public class MsmeUnitDetailsController {
                         .data(summary)
                         .success(true)
                         .message("Village-level MSME unit summaries retrieved successfully")
+                        .code(200)
+                        .build();
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping(path = "/duplicate-probability")
+    public ResponseEntity<?> duplicateProbability(@RequestParam String unitName,@RequestParam String ownerName,@RequestParam String district,@RequestParam(required = false) String mandal,@RequestParam(required = false) String villages) {
+        List<DuplicateProbability> probabilities = msmeUnitDetailsService.duplicateProbabilityCheck(unitName, ownerName, district, mandal, villages);
+
+        ApplicationAPIResponse<List<DuplicateProbability>> response =
+                ApplicationAPIResponse.<List<DuplicateProbability>>builder()
+                        .data(probabilities)
+                        .success(true)
+                        .message("Duplicate probability evaluated successfully")
                         .code(200)
                         .build();
 
