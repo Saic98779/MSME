@@ -70,7 +70,7 @@ public class AuthService {
                 .build();
     }
 
-    public AuthResponse login(LoginRequest request) throws Exception {
+    public AuthResponse  login(LoginRequest request) throws Exception {
         // Find user by email
         Optional<User> userOptional = userRepository.findByEmail(request.getEmail());
 
@@ -110,6 +110,8 @@ public class AuthService {
                 .userRole(user.getUserRole())
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
+                .district(user.getDistrict())
+                .mandal(user.getMandal())
                 .message("Login successful")
                 .build();
     }
