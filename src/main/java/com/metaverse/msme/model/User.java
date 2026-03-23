@@ -57,5 +57,11 @@ public class User {
 
     @Column(name = "last_login")
     private LocalDateTime lastLogin;
+
+    @Column(name = "district")
+    private String district;
+
+    @Column(name = "mandal")
+    private String mandal;
 }
 

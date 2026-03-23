@@ -39,6 +39,10 @@ public class AuthResponse {
 
     private String mobileNo;
 
+    private String district;
+
+    private String mandal;
+
     public static AuthResponse from(User user) {
         return AuthResponse.builder()
                 .userId(user.getUserId())
@@ -48,6 +52,8 @@ public class AuthResponse {
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
                 .mobileNo(user.getMobileNo())
+                .district(user.getDistrict())
+                .mandal(user.getMandal())
                 .build();
     }
 }
