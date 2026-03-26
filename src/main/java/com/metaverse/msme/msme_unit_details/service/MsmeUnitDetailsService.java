@@ -8,6 +8,7 @@ import com.metaverse.msme.repository.MsmeUnitDetailsRepository;
 import com.metaverse.msme.repository.MsmeUnitDetailsHistoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -333,6 +334,18 @@ public class MsmeUnitDetailsService {
         }
 
         return new ArrayList<>(mergedVillageSummaries.values());
+    }
+
+    public Page<MsmeUnitSummaryResponse> summaryOfMsmeData(String district, String mandal, Integer page, Integer size) {
+        int safePage = page != null && page >= 0 ? page : 0;
+        int safeSize = size != null && size > 0 ? size : 10;
+
+        List<MsmeUnitSummaryResponse> summaries = summaryOfMsmeData(district, mandal);
+        int start = Math.min(safePage * safeSize, summaries.size());
+        int end = Math.min(start + safeSize, summaries.size());
+        Pageable pageable = PageRequest.of(safePage, safeSize);
+
+        return new PageImpl<>(summaries.subList(start, end), pageable, summaries.size());
     }
 
 
