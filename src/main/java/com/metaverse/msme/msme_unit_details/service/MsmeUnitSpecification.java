@@ -6,6 +6,7 @@ import org.springframework.data.jpa.domain.Specification;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 public class MsmeUnitSpecification {
@@ -15,6 +16,9 @@ public class MsmeUnitSpecification {
         return (root, query, cb) -> {
 
             List<Predicate> predicates = new ArrayList<>();
+
+            extractFirst(request.getDistricts())
+                    .ifPresent(district -> predicates.add(cb.equal(cb.lower(root.get("district")), district)));
 
             // Mandal filter
             extractFirst(request.getMandals())
@@ -36,11 +40,31 @@ public class MsmeUnitSpecification {
                         "%" + request.getMobileNumber().trim() + "%"));
             }
 
-            // Stage Number
+
+           /* // Stage Number
             if (request.getStageNumber() != null) {
                 predicates.add(request.getStageNumber() < 7
                         ? cb.lessThan(root.get("stageNumber"), 7)
                         : cb.equal(root.get("stageNumber"), 7));
+            }*/
+            if (hasValue(request.getApplicationStatus())) {
+                switch (request.getApplicationStatus().trim().toUpperCase(Locale.ROOT)) {
+                    case "COMPLETED":
+                        predicates.add(cb.isTrue(root.get("isCompleted")));
+                        break;
+                    case "PENDING" :
+                        predicates.add(cb.isFalse(root.get("isCompleted")));
+                        break;
+                    case "NEW" :
+                        predicates.add(cb.isTrue(root.get("isNewUnit")));
+                        break;
+                    case "DUPLICATE" :
+                        predicates.add(cb.isTrue(root.get("isDuplicate")));
+                        break;
+                    case "YET_TO_START" :
+                        predicates.add(cb.isNull(root.get("isCompleted")));
+                     break;
+                }
             }
 
             query.distinct(true);

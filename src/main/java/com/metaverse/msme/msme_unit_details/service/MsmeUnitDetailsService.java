@@ -14,6 +14,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.Principal;
 import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -80,7 +81,7 @@ public class MsmeUnitDetailsService {
     public MsmeUnitDetailsDto getMsmeUnitById(Long msmeUnitId) {
         MsmeUnitDetails existing = unitDetailsRepository.findById(msmeUnitId)
                 .orElseThrow(() -> new RuntimeException(
-                        "MSME Unit Details not found with slno: " + msmeUnitId));
+                        "MSME Unit Details not found with msme_unit_id: " + msmeUnitId));
         return MsmeUnitDetailsMapper.toMsmeUnitDetailsDto(existing);
     }
 
@@ -300,27 +301,44 @@ public class MsmeUnitDetailsService {
                 normalizedMandal
         );
 
-        return countsList.stream()
-                .map(counts -> {
-                    MsmeUnitSummaryResponse response = new MsmeUnitSummaryResponse();
-                    response.setDistrict(normalizedDistrict);
-                    response.setMandal(normalizedMandal);
-                    response.setVillage(counts.getExtractedvillage());
-                    response.setTarget(counts.getTarget());
-                    response.setCompletedMsmes(counts.getCompletedMsmes());
-                    response.setPendingMsmes(counts.getPendingMsmes());
-                    response.setNewMsmes(counts.getNewMsmes());
-                    response.setDuplicatedMsmes(counts.getDuplicatedMsmes());
-                    response.setYetToBegin(counts.getYetToBegin());
-                    return response;
-                })
-                .toList();
+        Map<String, MsmeUnitSummaryResponse> mergedVillageSummaries = new LinkedHashMap<>();
+
+        for (MsmeUnitSummaryCounts counts : countsList) {
+            String village = normalizeFilter(counts.getExtractedvillage());
+            String villageKey = village == null ? "" : normalizeLocationText(village);
+
+            MsmeUnitSummaryResponse response = mergedVillageSummaries.get(villageKey);
+            if (response == null) {
+                response = new MsmeUnitSummaryResponse();
+                response.setDistrict(normalizedDistrict);
+                response.setMandal(normalizedMandal);
+                response.setVillage(village == null ? "" : village);
+                response.setTarget(0L);
+                response.setCompletedMsmes(0L);
+                response.setPendingMsmes(0L);
+                response.setNewMsmes(0L);
+                response.setDuplicatedMsmes(0L);
+                response.setYetToBegin(0L);
+                mergedVillageSummaries.put(villageKey, response);
+            } else if (shouldReplaceVillageLabel(response.getVillage(), village)) {
+                response.setVillage(village);
+            }
+
+            response.setTarget(response.getTarget() + safeLong(counts.getTarget()));
+            response.setCompletedMsmes(response.getCompletedMsmes() + safeLong(counts.getCompletedMsmes()));
+            response.setPendingMsmes(response.getPendingMsmes() + safeLong(counts.getPendingMsmes()));
+            response.setNewMsmes(response.getNewMsmes() + safeLong(counts.getNewMsmes()));
+            response.setDuplicatedMsmes(response.getDuplicatedMsmes() + safeLong(counts.getDuplicatedMsmes()));
+            response.setYetToBegin(response.getYetToBegin() + safeLong(counts.getYetToBegin()));
+        }
+
+        return new ArrayList<>(mergedVillageSummaries.values());
     }
 
 
 
 
-    public MsmeUnitSummaryResponse summaryOfMsmeData(String district,String mandal,String village){
+    public MsmeUnitSummaryResponse summaryOfMsmeData(String district, String mandal, String village){
         String normalizedDistrict = normalizeFilter(district);
         String normalizedMandal = normalizeFilter(mandal);
         String normalizedVillage = normalizeFilter(village);
@@ -590,5 +608,29 @@ public class MsmeUnitDetailsService {
 
         String withoutParentheses = normalized.replaceAll("\\s*\\([^)]*\\)", " ");
         return normalizeText(withoutParentheses);
+    }
+
+    private boolean shouldReplaceVillageLabel(String existingVillage, String candidateVillage) {
+        String normalizedCandidate = normalizeFilter(candidateVillage);
+        if (normalizedCandidate == null) {
+            return false;
+        }
+
+        String normalizedExisting = normalizeFilter(existingVillage);
+        if (normalizedExisting == null) {
+            return true;
+        }
+
+        boolean existingAllUpper = normalizedExisting.equals(normalizedExisting.toUpperCase());
+        boolean candidateAllUpper = normalizedCandidate.equals(normalizedCandidate.toUpperCase());
+        if (existingAllUpper != candidateAllUpper) {
+            return existingAllUpper;
+        }
+
+        return normalizedCandidate.length() > normalizedExisting.length();
+    }
+
+    private long safeLong(Long value) {
+        return value == null ? 0L : value;
     }
 }
