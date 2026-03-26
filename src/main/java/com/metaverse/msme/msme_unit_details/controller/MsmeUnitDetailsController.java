@@ -9,6 +9,7 @@ import com.metaverse.msme.msme_unit_details.service.MsmeUnitSearchPageResponse;
 import com.metaverse.msme.msme_unit_details.service.MsmeUnitSearchRequest;
 import com.metaverse.msme.msme_unit_details.service.MsmeUnitSearchResponse;
 import com.metaverse.msme.msme_unit_details.service.MsmeUnitSummaryResponse;
+import com.metaverse.msme.msme_unit_details.service.MsmeUnitSummaryPageResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -24,6 +25,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -126,7 +128,7 @@ public class MsmeUnitDetailsController {
 
 
     @GetMapping(path = "/dashboard/{district}")
-    public ResponseEntity<?> summaryOfMsmeUnits(@PathVariable(required = true) String district,@RequestParam(required = false) String mandal,@RequestParam(required = false) String villages) {
+    public ResponseEntity<?> summaryOfMsmeUnits(@PathVariable String district,@RequestParam(required = false) String mandal,@RequestParam(required = false) String villages) {
         MsmeUnitSummaryResponse summary = msmeUnitDetailsService.summaryOfMsmeData(district, mandal, villages);
 
         ApplicationAPIResponse<MsmeUnitSummaryResponse> response =
@@ -141,11 +143,18 @@ public class MsmeUnitDetailsController {
     }
 
     @GetMapping(path = "/villages-progress/{district}")
-    public ResponseEntity<?> summaryOfVillagesMsmeUnits(@PathVariable String district,@RequestParam String mandal) {
-        List<MsmeUnitSummaryResponse> summary = msmeUnitDetailsService.summaryOfMsmeData(district, mandal);
+    public ResponseEntity<?> summaryOfVillagesMsmeUnits(@PathVariable String district, @RequestParam String mandal, @RequestParam(required = false,defaultValue = "0") Integer page, @RequestParam(required = false,defaultValue = "10") Integer size) {
+        Page<MsmeUnitSummaryResponse> summaryPage = msmeUnitDetailsService.summaryOfMsmeData(district, mandal, page, size);
+        MsmeUnitSummaryPageResponse summary = MsmeUnitSummaryPageResponse.builder()
+                .content(summaryPage.getContent())
+                .pageNumber(summaryPage.getNumber())
+                .pageSize(summaryPage.getSize())
+                .totalElements(summaryPage.getTotalElements())
+                .totalPages(summaryPage.getTotalPages())
+                .build();
 
-        ApplicationAPIResponse<List<MsmeUnitSummaryResponse>> response =
-                ApplicationAPIResponse.<List<MsmeUnitSummaryResponse>>builder()
+        ApplicationAPIResponse<MsmeUnitSummaryPageResponse> response =
+                ApplicationAPIResponse.<MsmeUnitSummaryPageResponse>builder()
                         .data(summary)
                         .success(true)
                         .message("Village-progress MSME unit summaries retrieved successfully")
