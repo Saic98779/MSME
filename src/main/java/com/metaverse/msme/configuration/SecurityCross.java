@@ -13,6 +13,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -33,6 +34,9 @@ public class SecurityCross {
     @Autowired
     private JwtAuthenticationFilter jwtAuthenticationFilter;
 
+    @Autowired
+    private UserDetailsService userDetailsService;  // ← ADD THIS
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -40,8 +44,12 @@ public class SecurityCross {
 
     @Bean
     public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
-        return http.getSharedObject(AuthenticationManagerBuilder.class)
-                .build();
+        AuthenticationManagerBuilder authBuilder =
+                http.getSharedObject(AuthenticationManagerBuilder.class);
+        authBuilder
+                .userDetailsService(userDetailsService)  // ← ADD THIS
+                .passwordEncoder(passwordEncoder());      // ← ADD THIS
+        return authBuilder.build();
     }
 
     @Bean
@@ -51,10 +59,7 @@ public class SecurityCross {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // Allow OPTIONS requests (CORS preflight)
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-
-                        // Allow Swagger/OpenAPI endpoints (no authentication needed)
                         .requestMatchers(
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
@@ -68,8 +73,6 @@ public class SecurityCross {
                                 "/msme/swagger-resources/**",
                                 "/msme/webjars/**"
                         ).permitAll()
-
-                        // Allow authentication endpoints (login/register/validate-token - no authentication needed)
                         .requestMatchers(
                                 "/api/auth/login",
                                 "/api/auth/register",
@@ -78,14 +81,10 @@ public class SecurityCross {
                                 "/msme/api/auth/register",
                                 "/msme/api/auth/validate-token"
                         ).permitAll()
-
-                        // Allow file APIs
                         .requestMatchers(
                                 "/files/**",
                                 "/msme/files/**"
                         ).permitAll()
-
-                        // ALL OTHER ENDPOINTS REQUIRE AUTHENTICATION
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
@@ -97,13 +96,11 @@ public class SecurityCross {
     @Order(Ordered.HIGHEST_PRECEDENCE)
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-
         config.setAllowedOrigins(List.of(
                 "http://localhost:3000",
                 "http://localhost:4200",
                 "https://api.msme.metaversedu.in"
-                ));
-
+        ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         config.setAllowedHeaders(List.of(
                 "Authorization",
@@ -122,4 +119,3 @@ public class SecurityCross {
         return source;
     }
 }
-

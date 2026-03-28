@@ -3,6 +3,7 @@ package com.metaverse.msme.msme_unit_details.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.metaverse.msme.config.DuplicateProbabilityIndexInitializer;
 import com.metaverse.msme.model.MsmeUnitDetails;
+import com.metaverse.msme.model.User;
 import com.metaverse.msme.model.stage.*;
 import com.metaverse.msme.repository.MsmeUnitDetailsRepository;
 import com.metaverse.msme.repository.MsmeUnitDetailsHistoryRepository;
@@ -12,6 +13,8 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -340,7 +343,12 @@ public class MsmeUnitDetailsService {
         int safePage = page != null && page >= 0 ? page : 0;
         int safeSize = size != null && size > 0 ? size : 10;
 
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User userDetails = (User) authentication.getPrincipal();
+
         List<MsmeUnitSummaryResponse> summaries = summaryOfMsmeData(district, mandal);
+        summaries.forEach(s -> s.setUser(userDetails));
+
         int start = Math.min(safePage * safeSize, summaries.size());
         int end = Math.min(start + safeSize, summaries.size());
         Pageable pageable = PageRequest.of(safePage, safeSize);
@@ -349,9 +357,7 @@ public class MsmeUnitDetailsService {
     }
 
 
-
-
-    public MsmeUnitSummaryResponse summaryOfMsmeData(String district, String mandal, String village){
+    public MsmeUnitSummaryResponse summaryOfMsmeData(String district, String mandal, String village) {
         String normalizedDistrict = normalizeFilter(district);
         String normalizedMandal = normalizeFilter(mandal);
         String normalizedVillage = normalizeFilter(village);
@@ -359,6 +365,9 @@ public class MsmeUnitDetailsService {
         if (normalizedDistrict == null) {
             throw new IllegalArgumentException("district is required");
         }
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User userDetails = (User) authentication.getPrincipal();
 
         MsmeUnitSummaryCounts counts;
         if (normalizedMandal == null) {
@@ -383,6 +392,7 @@ public class MsmeUnitDetailsService {
         response.setNewMsmes(counts.getNewMsmes());
         response.setDuplicatedMsmes(counts.getDuplicatedMsmes());
         response.setYetToBegin(counts.getYetToBegin());
+        response.setUser(userDetails);
         return response;
     }
 
