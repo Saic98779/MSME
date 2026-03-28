@@ -3,8 +3,9 @@ package com.metaverse.msme.security;
 import com.metaverse.msme.service.JwtTokenProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -14,13 +15,15 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Collections;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Autowired
     private JwtTokenProvider jwtTokenProvider;
+
+    @Autowired
+    private UserDetailsService userDetailsService;  // loads your User object
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
@@ -40,13 +43,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 request.setAttribute("email", email);
                 request.setAttribute("username", username);
 
-                // Create authentication token with role-based authority
-                SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + userRole);
+                // Load full UserDetails (your User entity) so getPrincipal() returns User, not String
+                UserDetails userDetails = userDetailsService.loadUserByUsername(userId);
+
                 UsernamePasswordAuthenticationToken authentication =
-                    new UsernamePasswordAuthenticationToken(userId, null, Collections.singletonList(authority));
+                        new UsernamePasswordAuthenticationToken(
+                                userDetails,                    // ← principal is now User object, not raw userId string
+                                null,
+                                userDetails.getAuthorities()    // ← authorities come from UserDetails
+                        );
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
-                // Set authentication in SecurityContext
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
         } catch (Exception ex) {
@@ -64,4 +71,3 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         return null;
     }
 }
-

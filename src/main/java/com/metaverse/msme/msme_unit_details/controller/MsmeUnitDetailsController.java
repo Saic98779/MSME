@@ -128,9 +128,10 @@ public class MsmeUnitDetailsController {
 
 
     @GetMapping(path = "/dashboard/{district}")
-    public ResponseEntity<?> summaryOfMsmeUnits(@PathVariable String district,@RequestParam(required = false) String mandal,@RequestParam(required = false) String villages) {
+    public ResponseEntity<?> summaryOfMsmeUnits(@PathVariable String district,@RequestParam(required = false) String mandal,
+                                                @RequestParam(required = false) String villages, Principal principal) {
+        String userId = principal.getName();
         MsmeUnitSummaryResponse summary = msmeUnitDetailsService.summaryOfMsmeData(district, mandal, villages);
-
         ApplicationAPIResponse<MsmeUnitSummaryResponse> response =
                 ApplicationAPIResponse.<MsmeUnitSummaryResponse>builder()
                         .data(summary)

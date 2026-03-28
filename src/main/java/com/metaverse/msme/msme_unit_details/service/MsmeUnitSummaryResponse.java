@@ -1,5 +1,6 @@
 package com.metaverse.msme.msme_unit_details.service;
 
+import com.metaverse.msme.model.User;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -19,4 +20,6 @@ public class MsmeUnitSummaryResponse {
     private Long newMsmes;
     private Long duplicatedMsmes;
     private Long yetToBegin;
+
+    private User user;
 }
