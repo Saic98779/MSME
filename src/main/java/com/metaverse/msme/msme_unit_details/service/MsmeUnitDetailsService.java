@@ -116,7 +116,6 @@ public class MsmeUnitDetailsService {
                 .district(unit.getDistrict())
                 .mandal(unit.getMandal())
                 .village(unit.getVillage())
-                .stageNumber(unit.getStageNumber())
                 .build();
     }
 
@@ -343,11 +342,8 @@ public class MsmeUnitDetailsService {
         int safePage = page != null && page >= 0 ? page : 0;
         int safeSize = size != null && size > 0 ? size : 10;
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User userDetails = (User) authentication.getPrincipal();
 
         List<MsmeUnitSummaryResponse> summaries = summaryOfMsmeData(district, mandal);
-        summaries.forEach(s -> s.setUser(userDetails));
 
         int start = Math.min(safePage * safeSize, summaries.size());
         int end = Math.min(start + safeSize, summaries.size());
@@ -357,36 +353,27 @@ public class MsmeUnitDetailsService {
     }
 
 
-    public MsmeUnitSummaryResponse summaryOfMsmeData(String district, String mandal, String village) {
-        String normalizedDistrict = normalizeFilter(district);
-        String normalizedMandal = normalizeFilter(mandal);
-        String normalizedVillage = normalizeFilter(village);
-
-        if (normalizedDistrict == null) {
-            throw new IllegalArgumentException("district is required");
-        }
+    public MsmeUnitSummaryResponse summaryOfMsmeData() {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User userDetails = (User) authentication.getPrincipal();
 
+        if (userDetails.getDistrict() == null) {
+            throw new IllegalArgumentException("district is required");
+        }
+
+
         MsmeUnitSummaryCounts counts;
-        if (normalizedMandal == null) {
-            counts = unitDetailsRepository.fetchDistrictSummary(normalizedDistrict);
-        } else if (normalizedVillage == null) {
-            counts = unitDetailsRepository.fetchDistrictMandalSummary(normalizedDistrict, normalizedMandal);
+        if (userDetails.getMandal() == null) {
+            counts = unitDetailsRepository.fetchDistrictSummary(userDetails.getDistrict());
         } else {
-            counts = unitDetailsRepository.fetchDistrictMandalVillageSummary(
-                    normalizedDistrict,
-                    normalizedMandal,
-                    normalizedVillage
-            );
+            counts = unitDetailsRepository.fetchDistrictMandalSummary(userDetails.getDistrict(), userDetails.getMandal());
         }
 
         MsmeUnitSummaryResponse response = new MsmeUnitSummaryResponse();
-        response.setDistrict(normalizedDistrict);
-        response.setMandal(normalizedMandal);
-        response.setVillage(normalizedVillage);
-        response.setTarget(counts.getTarget());
+        response.setDistrict(userDetails.getDistrict());
+        response.setMandal(userDetails.getMandal());
+         response.setTarget(counts.getTarget());
         response.setCompletedMsmes(counts.getCompletedMsmes());
         response.setPendingMsmes(counts.getPendingMsmes());
         response.setNewMsmes(counts.getNewMsmes());
