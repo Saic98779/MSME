@@ -22,6 +22,9 @@ public class DuplicateProbabilityRequest {
     @Schema(description = "District name", example = "warangal")
     private String district;
 
+    @Schema(description = "Mobile number", example = "9876543210")
+    private String mobileNo;
+
     @Schema(description = "Mandal name", example = "hanamkonda")
     private String mandal;
 

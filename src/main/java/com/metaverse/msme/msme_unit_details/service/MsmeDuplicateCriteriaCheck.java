@@ -13,4 +13,6 @@ public interface MsmeDuplicateCriteriaCheck {
     String getExtractemandal();
 
     String getExtractevillage();
+
+    String getMobileNo();
 }
