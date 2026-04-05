@@ -18,7 +18,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.security.Principal;
 import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -446,6 +445,7 @@ public class MsmeUnitDetailsService {
                         .extractedistrict(candidate.getExtractedistrict())
                         .extractemandal(candidate.getExtractemandal())
                         .extractevillage(candidate.getExtractevillage())
+                        .mobileNo(candidate.getMobileNo())
                         .build())
                 .build();
     }
@@ -641,5 +641,13 @@ public class MsmeUnitDetailsService {
 
     private long safeLong(Long value) {
         return value == null ? 0L : value;
+    }
+
+    public int markMsmeDuplicate(List<Long> msmeUnitId){
+      int updatedCount = 0;
+        if (msmeUnitId != null && !msmeUnitId.isEmpty()) {
+            updatedCount = unitDetailsRepository.markMsmeDuplicate(new ArrayList<>(msmeUnitId));
+        }
+        return updatedCount;
     }
 }

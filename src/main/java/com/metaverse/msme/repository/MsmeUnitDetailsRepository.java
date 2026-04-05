@@ -4,12 +4,13 @@ import com.metaverse.msme.model.MsmeUnitDetails;
 import com.metaverse.msme.msme_unit_details.service.MsmeDuplicateCriteriaCheck;
 import com.metaverse.msme.msme_unit_details.service.MsmeUnitSummary;
 import com.metaverse.msme.msme_unit_details.service.MsmeUnitSummaryCounts;
-import com.metaverse.msme.msme_unit_details.service.MsmeUnitSummaryResponse;
+import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -27,7 +28,8 @@ public interface MsmeUnitDetailsRepository extends JpaRepository<MsmeUnitDetails
                 unitholderorownername AS ownerName,
                 extracteddistrict AS extractedistrict,
                 extractedmandal AS extractemandal,
-                extractedvillage AS extractevillage
+                extractedvillage AS extractevillage,
+                mobile_no as mobileNo
             FROM msme_unit_details
             WHERE LOWER(TRIM(BOTH FROM regexp_replace(COALESCE(CAST(extracteddistrict AS TEXT), ''), '\\s*\\([^)]*\\)', '', 'g'))) =
                   :normalizedDistrict
@@ -58,7 +60,8 @@ public interface MsmeUnitDetailsRepository extends JpaRepository<MsmeUnitDetails
                 unitholderorownername AS ownerName,
                 extracteddistrict AS extractedistrict,
                 extractedmandal AS extractemandal,
-                extractedvillage AS extractevillage
+                extractedvillage AS extractevillage,
+                mobile_no as mobileNo
             FROM msme_unit_details
             WHERE LOWER(TRIM(BOTH FROM regexp_replace(COALESCE(CAST(extracteddistrict AS TEXT), ''), '\\s*\\([^)]*\\)', '', 'g'))) =
                   :normalizedDistrict
@@ -131,6 +134,11 @@ public interface MsmeUnitDetailsRepository extends JpaRepository<MsmeUnitDetails
             ORDER BY extractedvillage
             """, nativeQuery = true)
    List<MsmeUnitSummaryCounts> fetchVillageSummary(@Param("district") String district, @Param("mandal") String mandal);
+
+    @Modifying
+    @Transactional
+    @Query(value = "UPDATE msme_unit_details SET is_duplicate = true WHERE msme_unit_id IN (:msmeUnitId)", nativeQuery = true)
+    int markMsmeDuplicate(@Param("msmeUnitId") List<Long> msmeUnitId);
 
 
 }
