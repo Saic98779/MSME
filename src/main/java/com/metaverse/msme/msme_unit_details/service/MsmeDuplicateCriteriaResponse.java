@@ -17,4 +17,5 @@ public class MsmeDuplicateCriteriaResponse {
     private String extractedistrict;
     private String extractemandal;
     private String extractevillage;
+    private String mobileNo;
 }

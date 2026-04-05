@@ -178,4 +178,15 @@ public class MsmeUnitDetailsController {
 
         return ResponseEntity.ok(response);
     }
+
+    @Operation(summary = "Mark as Duplicate",
+            description = "This API marks an existing record as duplicate to prevent further processing or duplication conflicts.")
+    @PutMapping(path = "/mark-duplicate")
+    public ResponseEntity<?> markMsmeDuplicate(@RequestBody List<Long> msmeUnitId) {
+        int updatedCount = msmeUnitDetailsService.markMsmeDuplicate(msmeUnitId);
+        if (updatedCount > 0) {
+         return ResponseEntity.ok(ApplicationAPIResponse.<Integer>builder().data(updatedCount).success(true).message("Marked duplicate msme's").code(200).build());
+        }
+        return ResponseEntity.ok(ApplicationAPIResponse.<Integer>builder().data(updatedCount).success(false).message("msme's can not find "+ msmeUnitId).code(400).build());
+    }
 }
