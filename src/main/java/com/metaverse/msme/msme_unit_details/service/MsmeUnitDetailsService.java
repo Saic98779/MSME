@@ -378,6 +378,7 @@ public class MsmeUnitDetailsService {
         response.setNewMsmes(counts.getNewMsmes());
         response.setDuplicatedMsmes(counts.getDuplicatedMsmes());
         response.setYetToBegin(counts.getYetToBegin());
+        response.setUser(userDetails);
         return response;
     }
 
