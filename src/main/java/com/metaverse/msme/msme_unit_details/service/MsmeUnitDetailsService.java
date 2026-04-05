@@ -152,7 +152,7 @@ public class MsmeUnitDetailsService {
             throw new IllegalArgumentException("stageNumber must not be null");
         }
         return switch (stageNumber) {
-            case 1 -> {
+            case 1, -1 -> {
                 Stage1UnitData s = new Stage1UnitData();
                 s.setUnitName(d.getUnitName());
                 s.setDistrict(d.getDistrict());
