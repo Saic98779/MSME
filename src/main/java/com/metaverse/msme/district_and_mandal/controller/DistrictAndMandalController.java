@@ -5,6 +5,7 @@ import com.metaverse.msme.district_and_mandal.service.DistrictResponse;
 import com.metaverse.msme.district_and_mandal.service.MandalResponse;
 import com.metaverse.msme.district_and_mandal.service.VillageResponse;
 import com.metaverse.msme.model.MsmeUnitDetails;
+import com.metaverse.msme.model.Sector;
 import jakarta.websocket.server.PathParam;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -41,6 +42,11 @@ public class DistrictAndMandalController {
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.ok(details);
+    }
+
+    @GetMapping("/sectors")
+    public ResponseEntity<List<Sector>> getAllSectors() {
+        return ResponseEntity.ok(districtAndMandalService.getAllSectors());
     }
 }
 
