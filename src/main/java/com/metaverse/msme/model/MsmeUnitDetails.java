@@ -215,6 +215,9 @@ public class MsmeUnitDetails {
     @Column(name = "category", columnDefinition = "TEXT")
     private String category;
 
+    @Column(name = "is_survey_completed")
+    private Boolean isSurveyCompleted;
+
     @Column(name = "ward", columnDefinition = "TEXT")
     private String ward;
 

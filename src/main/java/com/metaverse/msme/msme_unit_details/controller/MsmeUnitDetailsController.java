@@ -126,11 +126,12 @@ public class MsmeUnitDetailsController {
         return ResponseEntity.ok(response);
     }
 
+
     @GetMapping(path = "/dashboard")
     public ResponseEntity<?> summaryOfMsmeUnits(Principal principal) {
         String userId = principal.getName();
         MsmeUnitSummaryResponse summary = msmeUnitDetailsService.summaryOfMsmeData();
-       ApplicationAPIResponse<MsmeUnitSummaryResponse> response =
+        ApplicationAPIResponse<MsmeUnitSummaryResponse> response =
                 ApplicationAPIResponse.<MsmeUnitSummaryResponse>builder()
                         .data(summary)
                         .success(true)

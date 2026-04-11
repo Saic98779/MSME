@@ -46,6 +46,8 @@ public class AuthService {
                 .mobileNo(request.getMobileNo())
                 .userRole(request.getUserRole() != null ? request.getUserRole() : "USER")
                 .status("ACTIVE")
+                .district(request.getDistrict())
+                .mandal(request.getMandal())
                 .build();
 
         User savedUser = userRepository.save(user);
@@ -67,6 +69,8 @@ public class AuthService {
                 .firstName(savedUser.getFirstName())
                 .lastName(savedUser.getLastName())
                 .message("Registration successful")
+                .district(savedUser.getDistrict())
+                .mandal(savedUser.getMandal())
                 .build();
     }
 
