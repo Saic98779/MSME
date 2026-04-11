@@ -4,8 +4,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.metaverse.msme.district_and_mandal.repository.DistrictRepository;
+import com.metaverse.msme.district_and_mandal.repository.SectorRepository;
 import com.metaverse.msme.model.DistrictHierarchyEntity;
 import com.metaverse.msme.model.MsmeUnitDetails;
+import com.metaverse.msme.model.Sector;
 import com.metaverse.msme.repository.DistrictHierarchyRepository;
 import com.metaverse.msme.repository.MsmeUnitDetailsRepository;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +26,7 @@ public class DistrictAndMandalServiceAdapter implements DistrictAndMandalService
     private final MsmeUnitDetailsRepository unitDetailsRepository;
     private HierarchyResponse hierarchy;
     private final DistrictHierarchyRepository districtHierarchyRepository;
+    private final SectorRepository sectorRepository;
     @Autowired
     private  ObjectMapper objectMapper;
 
@@ -101,6 +104,10 @@ public class DistrictAndMandalServiceAdapter implements DistrictAndMandalService
         return unitDetailsRepository.findByVillageIgnoreCaseAndMandalIgnoreCase(village,mandal);
     }
 
+    @Override
+    public List<Sector> getAllSectors() {
+        return sectorRepository.findAll();
+    }
 
 }
 

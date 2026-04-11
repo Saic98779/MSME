@@ -31,5 +31,11 @@ public class RegisterRequest {
 
     @Schema(description = "User role", example = "USER", defaultValue = "USER", allowableValues = {"USER", "ADMIN", "MANAGER"})
     private String userRole;
+
+    @Schema(description = "district", example = "Adilabad")
+    private String district;
+
+    @Schema(description = "mandal", example = "Adilabad Rural")
+    private String mandal;
 }
 
