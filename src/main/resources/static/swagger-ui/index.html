@@ -4,31 +4,22 @@
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>MSME API Docs</title>
-    <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css"/>
 </head>
 <body>
-<div id="swagger-ui"></div>
+<div id="app"></div>
 
-<script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
-<script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-standalone-preset.js"></script>
+<script id="api-reference" data-url="/v3/api-docs"></script>
 <script>
-    // Derive context path (strip trailing /swagger-ui/...) then point to OpenAPI docs
-    const path = window.location.pathname;
-    const context = path.substring(0, path.indexOf('/swagger-ui'));
-    const docsUrl = context + '/v3/api-docs';
+    (function () {
+        var script = document.getElementById('api-reference');
+        var path = window.location.pathname;
+        var marker = '/swagger-ui';
+        var markerIndex = path.indexOf(marker);
+        var contextPath = markerIndex > -1 ? path.substring(0, markerIndex) : '';
 
-    window.onload = () => {
-        SwaggerUIBundle({
-            url: docsUrl,
-            dom_id: '#swagger-ui',
-            deepLinking: true,
-            presets: [
-                SwaggerUIBundle.presets.apis,
-                SwaggerUIStandalonePreset
-            ],
-            layout: "BaseLayout"
-        });
-    };
+        script.setAttribute('data-url', contextPath + '/v3/api-docs');
+    })();
 </script>
+<script src="https://cdn.jsdelivr.net/npm/@scalar/api-reference"></script>
 </body>
 </html>

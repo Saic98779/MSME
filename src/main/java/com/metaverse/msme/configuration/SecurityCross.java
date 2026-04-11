@@ -67,23 +67,18 @@ public class SecurityCross {
                                 "/v3/api-docs.yaml",
                                 "/swagger-resources/**",
                                 "/webjars/**",
-                                "/msme/swagger-ui/**",
-                                "/msme/swagger-ui.html",
-                                "/msme/v3/api-docs/**",
-                                "/msme/swagger-resources/**",
-                                "/msme/webjars/**"
+                                "/scalar",
+                                "/scalar/**",
+                                "/docs",
+                                "/docs/**"
                         ).permitAll()
                         .requestMatchers(
                                 "/api/auth/login",
                                 "/api/auth/register",
-                                "/api/auth/validate-token",
-                                "/msme/api/auth/login",
-                                "/msme/api/auth/register",
-                                "/msme/api/auth/validate-token"
+                                "/api/auth/validate-token"
                         ).permitAll()
                         .requestMatchers(
-                                "/files/**",
-                                "/msme/files/**"
+                                "/files/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

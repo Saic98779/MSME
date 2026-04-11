@@ -1,0 +1,370 @@
+openapi: 3.0.3
+info:
+  title: MSME API Documentation
+  description: REST API documentation for MSME Management System
+  version: 1.0.0
+
+servers:
+  - url: /msme
+    description: Context path in local/prod deployment
+
+tags:
+  - name: Auth
+  - name: District & Mandal
+  - name: MSME Unit
+  - name: Reports
+
+paths:
+  /api/auth/login:
+    post:
+      tags: [Auth]
+      summary: Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        "200":
+          description: Login success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        "401":
+          description: Invalid credentials
+
+  /api/auth/register:
+    post:
+      tags: [Auth]
+      summary: Register user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        "200":
+          description: Registered successfully
+        "400":
+          description: Validation error
+
+  /api/auth/validate-token:
+    get:
+      tags: [Auth]
+      summary: Validate JWT token
+      responses:
+        "200":
+          description: Token is valid
+        "401":
+          description: Token invalid/expired
+
+  /districts:
+    get:
+      tags: [District & Mandal]
+      summary: Get all districts
+      responses:
+        "200":
+          description: District list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DistrictResponse'
+
+  /mandals/{districtName}:
+    get:
+      tags: [District & Mandal]
+      summary: Get mandals by district
+      parameters:
+        - in: path
+          name: districtName
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Mandal list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MandalResponse'
+
+  /villages/{districtName}/{mandalName}:
+    get:
+      tags: [District & Mandal]
+      summary: Get villages by district and mandal
+      parameters:
+        - in: path
+          name: districtName
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: mandalName
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Village list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VillageResponse'
+
+  /units:
+    get:
+      tags: [District & Mandal]
+      summary: Get units by village and mandal
+      parameters:
+        - in: query
+          name: village
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: mandal
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Unit list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+        "204":
+          description: No data
+
+  /api/msme-unit/{id}:
+    get:
+      tags: [MSME Unit]
+      summary: Get MSME unit by ID
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: MSME unit details
+          content:
+            application/json:
+              schema:
+                type: object
+        "404":
+          description: Not found
+        "401":
+          description: Unauthorized
+
+  /api/msme-unit/search:
+    post:
+      tags: [MSME Unit]
+      summary: Search MSME units
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MsmeSearchRequest'
+      responses:
+        "200":
+          description: Search results page
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        "401":
+          description: Unauthorized
+
+  /api/msme-unit/dashboard:
+    get:
+      tags: [MSME Unit]
+      summary: MSME dashboard summary
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Dashboard data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        "401":
+          description: Unauthorized
+
+  /api/msme-unit/villages-progress/{district}:
+    get:
+      tags: [MSME Unit]
+      summary: Village-wise MSME progress by district/mandal
+      parameters:
+        - in: path
+          name: district
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: mandal
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: page
+          required: false
+          schema:
+            type: integer
+            default: 0
+        - in: query
+          name: size
+          required: false
+          schema:
+            type: integer
+            default: 10
+      responses:
+        "200":
+          description: Paginated village progress
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  /api/msme/download-excel-unitaddress:
+    get:
+      tags: [Reports]
+      summary: Download MSME unit-address Excel report
+      parameters:
+        - in: query
+          name: start
+          required: false
+          schema:
+            type: integer
+            default: 0
+        - in: query
+          name: end
+          required: false
+          schema:
+            type: integer
+            default: 10
+        - in: query
+          name: districtName
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Excel file stream
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    ApiResponse:
+      type: object
+      properties:
+        data:
+          nullable: true
+        code:
+          nullable: true
+        message:
+          type: string
+        success:
+          type: boolean
+        timestamp:
+          type: string
+          format: date-time
+
+    LoginRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          example: admin
+        password:
+          type: string
+          example: admin123
+      required: [username, password]
+
+    RegisterRequest:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+        email:
+          type: string
+          format: email
+
+    DistrictResponse:
+      type: object
+      properties:
+        districtId:
+          type: string
+        districtName:
+          type: string
+
+    MandalResponse:
+      type: object
+      properties:
+        mandalId:
+          type: string
+        mandalName:
+          type: string
+
+    VillageResponse:
+      type: object
+      properties:
+        villageId:
+          type: string
+        villageName:
+          type: string
+
+    MsmeSearchRequest:
+      type: object
+      description: Flexible search request (actual fields depend on backend DTO)
+      properties:
+        district:
+          type: string
+        mandal:
+          type: string
+        village:
+          type: string
+        unitName:
+          type: string
+        mobileNumber:
+          type: string
+        page:
+          type: integer
+          default: 0
+        size:
+          type: integer
+          default: 10
+
+security:
+  - BearerAuth: []

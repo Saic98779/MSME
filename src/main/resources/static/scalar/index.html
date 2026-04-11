@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MSME API Docs - Scalar</title>
+</head>
+<body>
+<div id="app"></div>
+
+<script id="api-reference" data-url="/v3/api-docs"></script>
+<script>
+    (function () {
+        var script = document.getElementById('api-reference');
+        var path = window.location.pathname;
+        var marker = '/scalar';
+        var markerIndex = path.indexOf(marker);
+        var contextPath = markerIndex > -1 ? path.substring(0, markerIndex) : '';
+
+        script.setAttribute('data-url', contextPath + '/v3/api-docs');
+
+        console.warn('🚀 Scalar is fetching OpenAPI spec from URL:', script.getAttribute('data-url'));
+
+        // Load scalar.js from local /docs/scalar.js (relative to context path)
+        var scalarScript = document.createElement('script');
+        scalarScript.src = contextPath + '/docs/scalar.js';
+        document.body.appendChild(scalarScript);
+    })();
+</script>
+</body>
+</html>
+
