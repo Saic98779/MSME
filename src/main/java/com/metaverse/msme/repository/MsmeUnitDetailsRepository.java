@@ -135,6 +135,22 @@ public interface MsmeUnitDetailsRepository extends JpaRepository<MsmeUnitDetails
             """, nativeQuery = true)
    List<MsmeUnitSummaryCounts> fetchVillageSummary(@Param("district") String district, @Param("mandal") String mandal);
 
+    @Query(value = """
+            SELECT
+                extractedmandal,
+                COUNT(*) AS target,
+                COALESCE(SUM(CASE WHEN is_completed = true THEN 1 ELSE 0 END), 0) AS completedMsmes,
+                COALESCE(SUM(CASE WHEN is_completed = false THEN 1 ELSE 0 END), 0) AS pendingMsmes,
+                COALESCE(SUM(CASE WHEN is_completed IS NULL THEN 1 ELSE 0 END), 0) AS yetToBegin,
+                COALESCE(SUM(CASE WHEN is_new_unit = true THEN 1 ELSE 0 END), 0) AS newMsmes,
+                COALESCE(SUM(CASE WHEN is_duplicate = true THEN 1 ELSE 0 END), 0) AS duplicatedMsmes
+            FROM msme_unit_details
+            WHERE LOWER(CAST(extracteddistrict AS TEXT)) = LOWER(:district)
+            GROUP BY extractedmandal
+            ORDER BY extractedmandal
+            """, nativeQuery = true)
+    List<MsmeUnitSummaryCounts> fetchMandalSummary(@Param("district") String district);
+
     @Modifying
     @Transactional
     @Query(value = "UPDATE msme_unit_details SET is_duplicate = true WHERE msme_unit_id IN (:msmeUnitId)", nativeQuery = true)

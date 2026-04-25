@@ -1,21 +1,14 @@
 package com.metaverse.msme.msme_unit_details.controller;
 
 import com.metaverse.msme.common.ApplicationAPIResponse;
-import com.metaverse.msme.msme_unit_details.service.DuplicateProbability;
-import com.metaverse.msme.msme_unit_details.service.DuplicateProbabilityRequest;
-import com.metaverse.msme.msme_unit_details.service.MsmeUnitDetailsDto;
-import com.metaverse.msme.msme_unit_details.service.MsmeUnitDetailsService;
-import com.metaverse.msme.msme_unit_details.service.MsmeUnitSearchPageResponse;
-import com.metaverse.msme.msme_unit_details.service.MsmeUnitSearchRequest;
-import com.metaverse.msme.msme_unit_details.service.MsmeUnitSearchResponse;
-import com.metaverse.msme.msme_unit_details.service.MsmeUnitSummaryResponse;
-import com.metaverse.msme.msme_unit_details.service.MsmeUnitSummaryPageResponse;
+import com.metaverse.msme.msme_unit_details.service.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -27,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/msme-unit")
@@ -190,4 +184,41 @@ public class MsmeUnitDetailsController {
         }
         return ResponseEntity.ok(ApplicationAPIResponse.<Integer>builder().data(updatedCount).success(false).message("msme's can not find "+ msmeUnitId).code(400).build());
     }
+
+    @Operation(
+            summary = "MSME drilldown summary dashboard",
+            description = "district is mandatory. If mandal is empty, returns mandal-wise counts for the district. If mandal is provided, returns village-wise counts for that mandal."
+    )
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            required = true,
+            content = @Content(schema = @Schema(implementation = DistrictMandalSummaryRequest.class))
+    )
+    @io.swagger.v3.oas.annotations.responses.ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "MSME unit drilldown summary retrieved successfully"
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid input"
+            )
+    })
+    @PostMapping(path = "/summary/drilldown-dashboard")
+    public ResponseEntity<?> summaryDrilldown(@Valid @RequestBody DistrictMandalSummaryRequest request) {
+    Map<String, MsmeUnitSummaryResponse> summary = msmeUnitDetailsService.summaryOfMsmeDataDrilldown(
+                request.getDistrict(),
+                request.getMandal()
+        );
+
+        ApplicationAPIResponse<Map<String, MsmeUnitSummaryResponse>> response =
+                ApplicationAPIResponse.<Map<String, MsmeUnitSummaryResponse>>builder()
+                        .data(summary)
+                        .success(true)
+                        .message("MSME unit drilldown summary retrieved successfully")
+                        .code(200)
+                        .build();
+
+        return ResponseEntity.ok(response);
+    }
+
 }

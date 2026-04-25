@@ -651,4 +651,73 @@ public class MsmeUnitDetailsService {
         }
         return updatedCount;
     }
+
+    public Map<String, MsmeUnitSummaryResponse> summaryOfMsmeDataDrilldown(String district, String mandal) {
+        String normalizedDistrict = requireFilter(district, "district");
+        String normalizedMandal = normalizeFilter(mandal);
+
+        if (normalizedMandal == null) {
+            List<MsmeUnitSummaryCounts> countsList = unitDetailsRepository.fetchMandalSummary(normalizedDistrict);
+            return buildLocationSummaryMap(countsList, normalizedDistrict, null, false);
+        }
+
+        List<MsmeUnitSummaryCounts> countsList = unitDetailsRepository.fetchVillageSummary(
+                normalizedDistrict,
+                normalizedMandal
+        );
+        return buildLocationSummaryMap(countsList, normalizedDistrict, normalizedMandal, true);
+    }
+
+    private Map<String, MsmeUnitSummaryResponse> buildLocationSummaryMap(
+            List<MsmeUnitSummaryCounts> countsList,
+            String district,
+            String mandal,
+            boolean villageMode
+    ) {
+        Map<String, MsmeUnitSummaryResponse> merged = new LinkedHashMap<>();
+
+        for (MsmeUnitSummaryCounts counts : countsList) {
+            String rawLocation = villageMode ? counts.getExtractedvillage() : counts.getExtractedmandal();
+            String location = normalizeFilter(rawLocation);
+            String locationKey = location == null ? "" : normalizeLocationText(location);
+
+            MsmeUnitSummaryResponse response = merged.get(locationKey);
+            if (response == null) {
+                response = new MsmeUnitSummaryResponse();
+                response.setDistrict(district);
+                response.setMandal(villageMode ? mandal : (location == null ? "" : location));
+                response.setVillage(villageMode ? (location == null ? "" : location) : "");
+                response.setTarget(0L);
+                response.setCompletedMsmes(0L);
+                response.setPendingMsmes(0L);
+                response.setNewMsmes(0L);
+                response.setDuplicatedMsmes(0L);
+                response.setYetToBegin(0L);
+                merged.put(locationKey, response);
+            } else if (villageMode) {
+                if (shouldReplaceVillageLabel(response.getVillage(), location)) {
+                    response.setVillage(location);
+                }
+            } else {
+                if (shouldReplaceVillageLabel(response.getMandal(), location)) {
+                    response.setMandal(location);
+                }
+            }
+
+            response.setTarget(response.getTarget() + safeLong(counts.getTarget()));
+            response.setCompletedMsmes(response.getCompletedMsmes() + safeLong(counts.getCompletedMsmes()));
+            response.setPendingMsmes(response.getPendingMsmes() + safeLong(counts.getPendingMsmes()));
+            response.setNewMsmes(response.getNewMsmes() + safeLong(counts.getNewMsmes()));
+            response.setDuplicatedMsmes(response.getDuplicatedMsmes() + safeLong(counts.getDuplicatedMsmes()));
+            response.setYetToBegin(response.getYetToBegin() + safeLong(counts.getYetToBegin()));
+        }
+
+        Map<String, MsmeUnitSummaryResponse> result = new LinkedHashMap<>();
+        for (MsmeUnitSummaryResponse value : merged.values()) {
+            String key = villageMode ? value.getVillage() : value.getMandal();
+            result.put(key == null ? "" : key, value);
+        }
+
+        return result;
+    }
 }

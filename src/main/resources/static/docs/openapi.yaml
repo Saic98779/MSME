@@ -368,3 +368,70 @@ components:
 
 security:
   - BearerAuth: []
+/api/msme-unit/summary/drilldown-dashboard:
+  post:
+    tags:
+      - MSME Unit Details
+    summary: MSME drilldown summary
+    description: Returns mandal-wise counts for district-only input, or village-wise counts when mandal is provided.
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - district
+            properties:
+              district:
+                type: string
+                example: rangareddy
+              mandal:
+                type: string
+                example: chevella
+    responses:
+      '200':
+        description: Drilldown summary retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                message:
+                  type: string
+                  example: MSME unit drilldown summary retrieved successfully
+                code:
+                  type: integer
+                  example: 200
+                data:
+                  type: object
+                  additionalProperties:
+                    type: object
+                    properties:
+                      district:
+                        type: string
+                      mandal:
+                        type: string
+                      village:
+                        type: string
+                      target:
+                        type: integer
+                        format: int64
+                      completedMsmes:
+                        type: integer
+                        format: int64
+                      pendingMsmes:
+                        type: integer
+                        format: int64
+                      newMsmes:
+                        type: integer
+                        format: int64
+                      duplicatedMsmes:
+                        type: integer
+                        format: int64
+                      yetToBegin:
+                        type: integer
+                        format: int64

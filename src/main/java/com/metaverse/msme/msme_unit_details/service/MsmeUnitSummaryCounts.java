@@ -4,6 +4,8 @@ public interface MsmeUnitSummaryCounts {
 
     String getExtractedvillage();
 
+    String getExtractedmandal();
+
     Long getTarget();
 
     Long getCompletedMsmes();
