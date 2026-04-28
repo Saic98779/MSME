@@ -655,6 +655,17 @@ public class MsmeUnitDetailsService {
     public Map<String, MsmeUnitSummaryResponse> summaryOfMsmeDataDrilldown(String district, String mandal) {
         String normalizedDistrict = requireFilter(district, "district");
         String normalizedMandal = normalizeFilter(mandal);
+        if (normalizedDistrict == null
+                || normalizedDistrict.equalsIgnoreCase("ALL")
+                || normalizedDistrict.equalsIgnoreCase("TELANGANA")
+                || normalizedDistrict.equalsIgnoreCase("STATE")) {
+
+            List<MsmeUnitSummaryCounts> countsList =
+                    unitDetailsRepository.fetchStateSummary();
+
+            return buildLocationSummaryMap(countsList, "STATE", null, false);
+        }
+
 
         if (normalizedMandal == null) {
             List<MsmeUnitSummaryCounts> countsList = unitDetailsRepository.fetchMandalSummary(normalizedDistrict);
@@ -684,6 +695,7 @@ public class MsmeUnitDetailsService {
             MsmeUnitSummaryResponse response = merged.get(locationKey);
             if (response == null) {
                 response = new MsmeUnitSummaryResponse();
+                response.setState("Telangana");
                 response.setDistrict(district);
                 response.setMandal(villageMode ? mandal : (location == null ? "" : location));
                 response.setVillage(villageMode ? (location == null ? "" : location) : "");
