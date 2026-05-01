@@ -156,5 +156,16 @@ public interface MsmeUnitDetailsRepository extends JpaRepository<MsmeUnitDetails
     @Query(value = "UPDATE msme_unit_details SET is_duplicate = true WHERE msme_unit_id IN (:msmeUnitId)", nativeQuery = true)
     int markMsmeDuplicate(@Param("msmeUnitId") List<Long> msmeUnitId);
 
-
+    @Query(value = """
+        SELECT
+            'STATE' AS extracteddistrict,
+            COUNT(*) AS target,
+            COALESCE(SUM(CASE WHEN is_completed = true THEN 1 ELSE 0 END), 0) AS completedMsmes,
+            COALESCE(SUM(CASE WHEN is_completed = false THEN 1 ELSE 0 END), 0) AS pendingMsmes,
+            COALESCE(SUM(CASE WHEN is_completed IS NULL THEN 1 ELSE 0 END), 0) AS yetToBegin,
+            COALESCE(SUM(CASE WHEN is_new_unit = true THEN 1 ELSE 0 END), 0) AS newMsmes,
+            COALESCE(SUM(CASE WHEN is_duplicate = true THEN 1 ELSE 0 END), 0) AS duplicatedMsmes
+        FROM msme_unit_details
+        """, nativeQuery = true)
+    List<MsmeUnitSummaryCounts> fetchStateSummary();
 }

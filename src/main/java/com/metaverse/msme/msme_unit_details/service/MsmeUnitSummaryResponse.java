@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class MsmeUnitSummaryResponse {
 
+    private String state;
     private String district;
     private String mandal;
     private String village;
